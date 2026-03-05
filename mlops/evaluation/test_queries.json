@@ -1,0 +1,37 @@
+[
+  {
+    "id": "test_001",
+    "query": "What's the current price of Apple stock?",
+    "expected_intent": "market_research",
+    "expected_agents": ["market_data"],
+    "tags": ["stock_price", "simple"]
+  },
+  {
+    "id": "test_002",
+    "query": "Analyze my portfolio risk and suggest diversification strategies",
+    "expected_intent": "portfolio_analysis",
+    "expected_agents": ["portfolio", "risk"],
+    "tags": ["portfolio", "risk", "complex"]
+  },
+  {
+    "id": "test_003",
+    "query": "What are the latest news about Tesla and how might it affect my holdings?",
+    "expected_intent": "news_analysis",
+    "expected_agents": ["news", "portfolio"],
+    "tags": ["news", "sentiment", "complex"]
+  },
+  {
+    "id": "test_004",
+    "query": "Should I buy more tech stocks or diversify into bonds?",
+    "expected_intent": "general_advice",
+    "expected_agents": ["portfolio", "risk", "market_data"],
+    "tags": ["advice", "diversification", "complex"]
+  },
+  {
+    "id": "test_005",
+    "query": "Compare AAPL and GOOGL performance over the last quarter",
+    "expected_intent": "market_research",
+    "expected_agents": ["market_data"],
+    "tags": ["comparison", "historical", "moderate"]
+  }
+]
