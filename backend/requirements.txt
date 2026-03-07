@@ -48,3 +48,4 @@ yfinance==0.2.35
 
 # CORS
 python-cors==1.0.0
+supabase

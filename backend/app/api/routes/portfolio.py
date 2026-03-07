@@ -1,6 +1,3 @@
-"""
-Portfolio API routes for portfolio management
-"""
 from fastapi import APIRouter, HTTPException
 from typing import List
 from app.schemas.portfolio_schema import (

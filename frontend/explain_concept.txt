@@ -1,0 +1,132 @@
+Updating the screen 
+Often, you’ll want your component to “remember” some information and display it. For example, maybe you want to count the number of times a button is clicked. To do this, add state to your component.
+
+First, import useState from React:
+
+import { useState } from 'react';
+Now you can declare a state variable inside your component:
+
+function MyButton() {
+  const [count, setCount] = useState(0);
+  // ...
+You’ll get two things from useState: the current state (count), and the function that lets you update it (setCount). You can give them any names, but the convention is to write [something, setSomething].
+
+The first time the button is displayed, count will be 0 because you passed 0 to useState(). When you want to change state, call setCount() and pass the new value to it. Clicking this button will increment the counter:
+
+function MyButton() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+  }
+
+  return (
+    <button onClick={handleClick}>
+      Clicked {count} times
+    </button>
+  );
+}
+React will call your component function again. This time, count will be 1. Then it will be 2. And so on.
+
+If you render the same component multiple times, each will get its own state. Click each button separately:
+
+Correct mental model
+
+useEffect runs after React finishes rendering and committing the UI to the DOM, when its dependencies change.
+
+So the flow is:
+
+state change
+      ↓
+React re-renders component
+      ↓
+DOM is updated
+      ↓
+useEffect runs
+
+So a clearer sentence would be:
+
+useEffect runs after React renders the UI and updates the DOM, when its dependencies change.
+
+
+
+Let's break down isLoading in this line:
+
+export function ChatInput({ onSend, isLoading }: ChatInputProps)
+1. What isLoading Is
+
+isLoading is a prop passed from the parent component.
+
+It represents whether the chat system is currently processing a request.
+
+Type definition earlier in your file:
+
+interface ChatInputProps {
+  onSend: (message: string) => void;
+  isLoading?: boolean;
+}
+
+Meaning:
+
+isLoading?: boolean
+
+boolean → true or false
+
+? → optional prop
+
+So isLoading may be:
+
+true
+false
+undefined
+2. Where It Comes From
+
+isLoading is controlled by the parent component, not inside ChatInput.
+
+Example parent:
+
+function ChatPage() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const sendMessage = async (message: string) => {
+    setIsLoading(true);
+
+    await callAI(message);
+
+    setIsLoading(false);
+  };
+
+  return (
+    <ChatInput
+      onSend={sendMessage}
+      isLoading={isLoading}
+    />
+  );
+}
+
+Flow:
+
+User sends message
+        ↓
+Parent calls API
+        ↓
+isLoading = true
+        ↓
+ChatInput disables input
+        ↓
+API finishes
+        ↓
+isLoading = false
+3. How isLoading Is Used in Your Component
+1️⃣ Prevent sending message while loading
+if (!value.trim() || isLoading) return;
+
+Meaning:
+
+if message empty → stop
+if system loading → stop
+
+This prevents sending multiple messages quickly.
+
+2️⃣ Disable textarea
+disabled={isLoading}

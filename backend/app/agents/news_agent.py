@@ -3,8 +3,8 @@ News agent - fetches and analyzes financial news
 """
 from typing import Dict, Any, List
 from app.agents.base_agent import BaseAgent
-from app.services.llm_service import LLMService
 from app.core.logger import logger
+from app.core.config import settings
 
 
 class NewsAgent(BaseAgent):
@@ -14,10 +14,12 @@ class NewsAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(
-            name="News",
-            description="Fetches financial news and performs sentiment analysis"
+            api_key=settings.API_KEY,
+            base_url=settings.API_ENDPOINT,
+            model=settings.DEFAULT_MODEL,
+            system_prompt="You are a financial news analyst. Summarize relevant news, analyze market sentiment, and identify potential market-moving events.",
+            max_iterations=1
         )
-        self.llm_service = LLMService()
 
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -72,7 +74,3 @@ class NewsAgent(BaseAgent):
                 "negative": 10
             }
         }
-
-    def get_system_prompt(self) -> str:
-        return """You are a financial news analyst. Summarize relevant news, 
-        analyze market sentiment, and identify potential market-moving events."""

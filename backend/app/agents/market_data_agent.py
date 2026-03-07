@@ -5,6 +5,7 @@ from typing import Dict, Any
 from app.agents.base_agent import BaseAgent
 from app.services.market_data_service import MarketDataService
 from app.core.logger import logger
+from app.core.config import settings
 
 
 class MarketDataAgent(BaseAgent):
@@ -14,8 +15,11 @@ class MarketDataAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(
-            name="MarketData",
-            description="Fetches real-time stock prices, market trends, and technical indicators"
+            api_key=settings.API_KEY,
+            base_url=settings.API_ENDPOINT,
+            model=settings.DEFAULT_MODEL,
+            system_prompt="You are a market data analyst. Provide real-time stock prices, market trends, and technical analysis based on the latest market data.",
+            max_iterations=1
         )
         self.market_service = MarketDataService()
 
@@ -56,7 +60,3 @@ class MarketDataAgent(BaseAgent):
         found_symbols = [s for s in common_symbols if s.lower()
                          in message.lower()]
         return found_symbols
-
-    def get_system_prompt(self) -> str:
-        return """You are a market data analyst. Provide real-time stock prices, 
-        market trends, and technical analysis based on the latest market data."""

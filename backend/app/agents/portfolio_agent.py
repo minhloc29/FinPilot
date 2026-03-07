@@ -3,8 +3,8 @@ Portfolio agent - analyzes and manages investment portfolios
 """
 from typing import Dict, Any
 from app.agents.base_agent import BaseAgent
-from app.services.llm_service import LLMService
 from app.core.logger import logger
+from app.core.config import settings
 
 
 class PortfolioAgent(BaseAgent):
@@ -14,10 +14,12 @@ class PortfolioAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(
-            name="Portfolio",
-            description="Analyzes portfolio allocation, diversification, and performance"
+            api_key=settings.API_KEY,
+            base_url=settings.API_ENDPOINT,
+            model=settings.DEFAULT_MODEL,
+            system_prompt="You are a portfolio management expert. Analyze portfolio composition, assess diversification, and provide optimization recommendations.",
+            max_iterations=1
         )
-        self.llm_service = LLMService()
 
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -88,7 +90,3 @@ class PortfolioAgent(BaseAgent):
             allocation[symbol] = round(percentage, 2)
 
         return allocation
-
-    def get_system_prompt(self) -> str:
-        return """You are a portfolio management expert. Analyze portfolio composition, 
-        assess diversification, and provide optimization recommendations."""

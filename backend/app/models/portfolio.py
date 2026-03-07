@@ -26,7 +26,7 @@ class Holding(BaseModel):
     shares = Column(Float, nullable=False)
     average_cost = Column(Float)
     current_value = Column(Float)
-    metadata = Column(JSON)
+    message_metadata = Column(JSON)
 
     # Relationship
     portfolio = relationship("Portfolio", back_populates="holdings")

@@ -1,55 +1,43 @@
-import React from 'react';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import ChatWindow from '../components/ChatWindow';
-import { useChat } from '../hooks/useChat';
+import { ChatPanel } from "@/components/chat/ChatPanel";
+import { Navbar } from "@/components/layout/Navbar";
 
-const Home: NextPage = () => {
-  const { messages, sendMessage, isLoading } = useChat();
+import { AboutSection } from "@/components/landing/AboutSection";
+import { FeatureCard } from "@/components/landing/FeatureCard";
+import { Step } from "@/components/landing/Step";
 
+const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Head>
-        <title>AI Financial Copilot</title>
-        <meta name="description" content="AI-powered financial assistant" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div className="flex flex-col min-h-screen w-full 
+    bg-gradient-to-br from-purple-50 via-blue-50 to-orange-50">
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            AI Financial Copilot
+      <Navbar />
+
+      <main className="flex flex-col items-center px-6 pt-24">
+
+        {/* HERO */}
+        <div className="text-center mb-12 max-w-2xl">
+          <h1 className="text-4xl font-semibold text-gray-900">
+            Your AI Financial Analyst
           </h1>
-          <p className="text-gray-600">
-            Your intelligent assistant for financial analysis and portfolio management
+
+          <p className="mt-3 text-gray-500">
+            Analyze portfolios, market trends, and investment risk in one conversation.
           </p>
-        </header>
-
-        {/* Chat Interface */}
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg h-[600px]">
-          <ChatWindow
-            messages={messages}
-            onSendMessage={sendMessage}
-            isLoading={isLoading}
-          />
         </div>
 
-        {/* Quick Actions */}
-        <div className="max-w-4xl mx-auto mt-6 grid grid-cols-3 gap-4">
-          <button className="p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <div className="text-sm font-semibold text-gray-700">Market Overview</div>
-          </button>
-          <button className="p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <div className="text-sm font-semibold text-gray-700">Portfolio Analysis</div>
-          </button>
-          <button className="p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <div className="text-sm font-semibold text-gray-700">Risk Assessment</div>
-          </button>
+        <div className="w-full max-w-2xl mb-24">
+          <ChatPanel />
         </div>
+
+        {/* FEATURES */}
+        <AboutSection />
+        
+         
+
       </main>
+
     </div>
   );
 };
 
-export default Home;
+export default Index;

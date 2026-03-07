@@ -47,13 +47,11 @@ class BaseAgent:
 
         async for chunk in stream:
 
-            # Skip if no choices
             if not chunk.choices:
                 continue
 
             choice = chunk.choices[0]
 
-            # Skip if no delta
             if not hasattr(choice, "delta") or choice.delta is None:
                 continue
 
@@ -81,7 +79,6 @@ class BaseAgent:
 
             response = await self.stream_response(context)
 
-            # Append assistant reply to history
             chat_history.append(
                 {"role": "assistant", "content": response}
             )

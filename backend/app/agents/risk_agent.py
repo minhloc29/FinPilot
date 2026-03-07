@@ -5,6 +5,7 @@ from typing import Dict, Any
 from app.agents.base_agent import BaseAgent
 from app.utils.risk_metrics import calculate_sharpe_ratio, calculate_var
 from app.core.logger import logger
+from app.core.config import settings
 
 
 class RiskAgent(BaseAgent):
@@ -14,8 +15,11 @@ class RiskAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(
-            name="Risk",
-            description="Calculates risk metrics, VaR, volatility, and risk-adjusted returns"
+            api_key=settings.API_KEY,
+            base_url=settings.API_ENDPOINT,
+            model=settings.DEFAULT_MODEL,
+            system_prompt="You are a risk management expert. Assess portfolio risk, calculate risk metrics, and provide risk mitigation recommendations.",
+            max_iterations=1
         )
 
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -46,7 +50,3 @@ class RiskAgent(BaseAgent):
         if len(returns) < 2:
             return 0.0
         return round(statistics.stdev(returns), 4)
-
-    def get_system_prompt(self) -> str:
-        return """You are a risk management expert. Assess portfolio risk, calculate risk metrics, 
-        and provide risk mitigation recommendations."""

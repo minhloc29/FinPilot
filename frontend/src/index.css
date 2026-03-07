@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 20% 96%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 245 58% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 14% 94%;
+    --secondary-foreground: 220 20% 30%;
+
+    --muted: 240 10% 92%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 245 40% 94%;
+    --accent-foreground: 245 58% 50%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 88%;
+    --input: 240 10% 88%;
+    --ring: 245 58% 58%;
+
+    --radius: 0.75rem;
+
+    --gain: 152 60% 38%;
+    --loss: 0 72% 55%;
+    --warning: 38 92% 50%;
+
+    --glass: 0 0% 100% / 0.7;
+    --glass-border: 240 10% 90%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 30%;
+    --sidebar-primary: 245 58% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 245 40% 94%;
+    --sidebar-accent-foreground: 220 20% 30%;
+    --sidebar-border: 240 10% 88%;
+    --sidebar-ring: 245 58% 58%;
+
+    --font-sans: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .text-gain {
+    color: hsl(var(--gain));
+  }
+
+  .text-loss {
+    color: hsl(var(--loss));
+  }
+
+  .bg-glass {
+    background: hsl(var(--glass));
+    backdrop-filter: blur(12px);
+    border-color: hsl(var(--glass-border));
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.12), 0 0 60px hsl(var(--primary) / 0.04);
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}

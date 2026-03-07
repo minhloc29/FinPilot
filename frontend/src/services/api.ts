@@ -1,80 +1,85 @@
-import axios from 'axios';
+/**
+ * API client for backend communication
+ */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/";
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-export interface ChatMessage {
+export interface ChatRequest {
   message: string;
   conversation_id?: string;
   user_id?: string;
+  system_prompt?: string;
 }
 
 export interface ChatResponse {
   message: string;
   conversation_id: string;
-  sources: string[];
-  metadata: Record<string, any>;
+  sources?: string[];
+  metadata?: Record<string, any>;
 }
 
-export const chatAPI = {
-  sendMessage: async (data: ChatMessage): Promise<ChatResponse> => {
-    const response = await api.post<ChatResponse>('/chat', data);
-    return response.data;
-  },
-
-  getConversation: async (conversationId: string) => {
-    const response = await api.get(`/conversations/${conversationId}`);
-    return response.data;
-  },
-};
-
-export interface Portfolio {
-  id: string;
-  user_id: string;
-  name: string;
-  holdings: Array<{
-    symbol: string;
-    shares: number;
-    average_cost?: number;
+export interface ConversationHistory {
+  conversation_id: string;
+  messages: Array<{
+    role: "user" | "assistant";
+    content: string;
   }>;
-  total_value?: number;
+  message_count: number;
 }
 
-export const portfolioAPI = {
-  create: async (data: Omit<Portfolio, 'id'>): Promise<Portfolio> => {
-    const response = await api.post<Portfolio>('/portfolio', data);
-    return response.data;
-  },
+class ApiClient {
+  private baseUrl: string;
 
-  get: async (portfolioId: string): Promise<Portfolio> => {
-    const response = await api.get<Portfolio>(`/portfolio/${portfolioId}`);
-    return response.data;
-  },
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
-  list: async (userId: string): Promise<Portfolio[]> => {
-    const response = await api.get<Portfolio[]>('/portfolios', {
-      params: { user_id: userId },
+  /**
+   * Send a chat message to the backend
+   */
+  async sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
+    const response = await fetch(`${this.baseUrl}/api/v1/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
     });
-    return response.data;
-  },
 
-  analyze: async (portfolioId: string) => {
-    const response = await api.post(`/portfolio/${portfolioId}/analyze`);
-    return response.data;
-  },
-};
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: "Unknown error" }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
 
-export const healthAPI = {
-  check: async () => {
-    const response = await api.get('/health');
-    return response.data;
-  },
-};
+    return response.json();
+  }
 
-export default api;
+  /**
+   * Get conversation history
+   */
+  async getConversation(conversationId: string): Promise<ConversationHistory> {
+    const response = await fetch(`${this.baseUrl}/api/v1/conversations/${conversationId}`);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: "Unknown error" }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Check backend health
+   */
+  async healthCheck(): Promise<{ status: string }> {
+    const response = await fetch(`${this.baseUrl}/api/v1/health`);
+    
+    if (!response.ok) {
+      throw new Error(`Health check failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+}
+
+export const apiClient = new ApiClient(API_URL);

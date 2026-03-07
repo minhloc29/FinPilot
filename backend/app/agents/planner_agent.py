@@ -1,14 +1,14 @@
 """
 Planner agent - orchestrates other agents based on user intent
 """
-from typing import Dict, Any
+from typing import Dict, Any, List
 from app.agents.base_agent import BaseAgent
 from app.agents.market_data_agent import MarketDataAgent
 from app.agents.portfolio_agent import PortfolioAgent
 from app.agents.risk_agent import RiskAgent
 from app.agents.news_agent import NewsAgent
-from app.services.llm_service import LLMService
 from app.core.logger import logger
+from app.core.config import settings
 
 
 class PlannerAgent(BaseAgent):
@@ -18,10 +18,12 @@ class PlannerAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(
-            name="Planner",
-            description="Analyzes user intent and coordinates specialized agents"
+            api_key=settings.API_KEY,
+            base_url=settings.API_ENDPOINT,
+            model=settings.DEFAULT_MODEL,
+            system_prompt="You are a financial planning AI that coordinates specialized agents to help users with financial decisions.",
+            max_iterations=1
         )
-        self.llm_service = LLMService()
         self.sub_agents = {
             "market_data": MarketDataAgent(),
             "portfolio": PortfolioAgent(),
@@ -29,22 +31,37 @@ class PlannerAgent(BaseAgent):
             "news": NewsAgent()
         }
 
+    async def chat(self, chat_history: List[Dict[str, str]]) -> str:
+        """
+        Override base chat method to enable agent orchestration with conversation context
+        """
+        # Extract the latest user message from chat history
+        user_message = ""
+        for message in reversed(chat_history):
+            if message.get("role") == "user":
+                user_message = message.get("content", "")
+                break
+
+        if not user_message:
+            return "I didn't receive a message. How can I help you with your finances?"
+
+        # Use the process method to orchestrate agents
+        result = await self.process(
+            message=user_message,
+            conversation_id=None,
+            user_id=None
+        )
+
+        # Return just the message text to match BaseAgent.chat() signature
+        return result["message"]
+
     async def process(self, message: str, conversation_id: str = None, user_id: str = None) -> Dict[str, Any]:
-        """
-        Process user message and coordinate agents
-        """
-        logger.info(f"Planning response for message: {message[:50]}...")
+       
+        # logger.info(f"Planning response for message: {message[:50]}...")
 
-        # Analyze user intent
         intent = await self._analyze_intent(message)
-
-        # Determine which agents to invoke
         agent_plan = await self._create_agent_plan(intent, message)
-
-        # Execute plan
         results = await self._execute_plan(agent_plan, message)
-
-        # Synthesize final response
         response = await self._synthesize_response(results, message)
 
         return {
@@ -61,13 +78,17 @@ class PlannerAgent(BaseAgent):
         """
         Analyze user intent from message
         """
-        prompt = f"""Analyze the user's financial query and classify their intent.
+        chat_history = [
+            {
+                "role": "user",
+                "content": f"""Analyze the user's financial query and classify their intent.
         
 User query: {message}
 
-Classify into one of: portfolio_analysis, market_research, risk_assessment, news_analysis, general_advice
-"""
-        response = await self.llm_service.generate(prompt, max_tokens=50)
+Classify into one of: portfolio_analysis, market_research, risk_assessment, news_analysis, general_advice"""
+            }
+        ]
+        response = await super().chat(chat_history)
         return response.strip().lower()
 
     async def _create_agent_plan(self, intent: str, message: str) -> Dict[str, Any]:
@@ -109,16 +130,41 @@ Classify into one of: portfolio_analysis, market_research, risk_assessment, news
         """
         Synthesize final response from agent results
         """
-        prompt = f"""You are a financial advisor AI. Based on the analysis results, provide a clear and helpful response to the user.
+        chat_history = [
+            {
+                "role": "user",
+                "content": f"""You are a financial advisor AI. Based on the analysis results, provide a clear and helpful response to the user.
 
 User query: {message}
 
 Analysis results: {results['data']}
 
 Provide a concise, actionable response:"""
-
-        response = await self.llm_service.generate(prompt, max_tokens=500)
+            }
+        ]
+        response = await super().chat(chat_history)
         return response
 
-    def get_system_prompt(self) -> str:
-        return "You are a financial planning AI that coordinates specialized agents to help users with financial decisions."
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        agent = PlannerAgent()
+
+        # Example conversation history
+        chat_history = [
+            {
+                "role": "user",
+                "content": "Should I invest in FPT stock for the long term?"
+            }
+        ]
+
+        print("User:", chat_history[0]["content"])
+
+        response = await agent.chat(chat_history)
+
+        print("\nAI Response:")
+        print(response)
+
+    asyncio.run(main())
