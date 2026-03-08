@@ -28,37 +28,37 @@ export function AboutSection() {
       <div>
 
         <p className="text-purple-600 font-semibold mb-2 uppercase text-sm">
-          What We Offer
+          Giải pháp
         </p>
 
         <h2 className="text-4xl font-bold text-gray-900 mb-8">
-          AI Tools For Smarter Investing
+          Công cụ AI giúp đầu tư thông minh hơn
         </h2>
 
         <div className="space-y-8">
 
           <Feature
             icon={<BarChart3 />}
-            title="Portfolio Analysis"
-            desc="Understand diversification, sector exposure, and portfolio performance instantly."
+            title="Phân tích danh mục đầu tư"
+            desc="Hiểu rõ mức độ đa dạng hóa, phân bổ theo ngành và hiệu suất danh mục của bạn ngay lập tức."
           />
 
           <Feature
             icon={<TrendingUp />}
-            title="Market Insights"
-            desc="Ask questions about stocks, trends, and macroeconomic signals."
+            title="Insight thị trường"
+            desc="Đặt câu hỏi về cổ phiếu, xu hướng thị trường và các tín hiệu kinh tế vĩ mô để nhận phân tích từ AI."
           />
 
           <Feature
             icon={<ShieldCheck />}
-            title="Risk Assessment"
-            desc="Evaluate volatility, concentration risk, and potential drawdowns."
+            title="Đánh giá rủi ro"
+            desc="Phân tích độ biến động, rủi ro tập trung và các khả năng sụt giảm của danh mục đầu tư."
           />
 
           <Feature
             icon={<Wallet />}
-            title="Smart Rebalancing"
-            desc="AI suggests portfolio adjustments to improve long-term performance."
+            title="Tái cân bằng thông minh"
+            desc="AI đề xuất điều chỉnh danh mục nhằm tối ưu hóa hiệu quả và tăng trưởng dài hạn."
           />
 
         </div>

@@ -40,7 +40,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="What do you want to analyze today..."
+          placeholder="Bạn muốn phân tích gì hôm nay..."
           className="flex-1 resize-none bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none py-2"
           rows={1}
           disabled={isLoading}

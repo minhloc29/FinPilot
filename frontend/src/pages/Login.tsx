@@ -95,12 +95,12 @@ export default function AuthPage() {
 
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">
-            {isLogin ? "Login" : "Register"}
+            {isLogin ? "Đăng nhập" : "Đăng ký"}
           </h1>
           <p className="text-gray-500 text-sm mt-2">
             {isLogin
-              ? "Welcome back! Please login to your account."
-              : "Create a new account to get started."}
+              ? "Vui lòng đăng nhập"
+              : "Tạo một tài khoản để bắt đầu."}
           </p>
         </div>
 
@@ -161,7 +161,7 @@ export default function AuthPage() {
 
           {isLogin && (
             <div className="text-right text-sm text-orange-500 cursor-pointer hover:underline">
-              Forgot your password?
+              Quên mật khẩu?
             </div>
           )}
 
@@ -173,14 +173,14 @@ export default function AuthPage() {
             {isLoading
               ? "Please wait..."
               : isLogin
-              ? "Login"
-              : "Register"}
+              ? "Đăng nhập"
+              : "Đăng ký"}
           </button>
 
         </form>
 
         <div className="text-center text-gray-500 my-4">
-          Or Login With
+          Đăng nhập với
         </div>
 
         <div className="flex gap-3">
@@ -200,22 +200,22 @@ export default function AuthPage() {
         <div className="text-center text-sm text-gray-500 mt-6">
           {isLogin ? (
             <>
-              Don't have an account?{" "}
+              Không có tài khoản?{" "}
               <span
                 className="text-indigo-500 cursor-pointer hover:underline"
                 onClick={toggleMode}
               >
-                Sign up
+                Đăng ký
               </span>
             </>
           ) : (
             <>
-              Already have an account?{" "}
+              Đã có tài khoản?{" "}
               <span
                 className="text-indigo-500 cursor-pointer hover:underline"
                 onClick={toggleMode}
               >
-                Login
+                Đăng Nhập
               </span>
             </>
           )}

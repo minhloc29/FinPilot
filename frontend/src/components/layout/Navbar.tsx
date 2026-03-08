@@ -54,12 +54,14 @@ export function Navbar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={"/profile"}>Hồ sơ</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>Cài đặt</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -67,7 +69,7 @@ export function Navbar() {
         <Link to="/login">
           <Button className="rounded-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
             <User className="h-4 w-4" />
-            Login
+            Đăng nhập
           </Button>
         </Link>
       )}

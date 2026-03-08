@@ -3,6 +3,9 @@ import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { Bot, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -11,24 +14,13 @@ interface Message {
   timestamp: Date;
 }
 
-const MOCK_RESPONSES: Record<string, string> = {
-  default: `Based on your current portfolio allocation, here's my analysis:
-
-| Asset | Weight | 1D Change |
-|-------|--------|-----------|
-| AAPL  | 22.4%  | +1.2%     |
-| MSFT  | 18.6%  | +0.8%     |
-| VOO   | 35.0%  | +0.5%     |
-| BTC   | 12.0%  | -2.1%     |
-| Cash  | 12.0%  | —         |
-
-Your portfolio is **up 0.6% today**. The tech-heavy allocation is performing well, but I'd recommend considering more diversification into international markets. Would you like me to suggest some rebalancing options?`,
-};
-
 export function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { user, token } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -36,7 +28,7 @@ export function ChatPanel() {
     }
   }, [messages]);
 
-  const handleSend = (content: string) => {
+  const handleSend = async (content: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -46,16 +38,45 @@ export function ChatPanel() {
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Call backend API
+      const response = token 
+        ? await apiClient.sendAuthenticatedChatMessage(
+            { 
+              message: content, 
+              conversation_id: conversationId,
+              user_id: user?.id.toString()
+            },
+            token
+          )
+        : await apiClient.sendChatMessage({ 
+            message: content,
+            conversation_id: conversationId
+          });
+
+      // Store conversation ID for continuity
+      setConversationId(response.conversation_id);
+
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: MOCK_RESPONSES.default,
+        content: response.message,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
+    } catch (error: any) {
+      console.error("Chat error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+      
+      // Remove the user message if there was an error
+      setMessages((prev) => prev.filter((msg) => msg.id !== userMsg.id));
+    } finally {
       setIsLoading(false);
-    }, 1200);
+    }
   };
 
   const hasMessages = messages.length > 0;
@@ -74,11 +95,18 @@ export function ChatPanel() {
           </div>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">AlphaLens</h1>
           <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-            Unlock Your Financial Potential
+            Mở khóa tiềm năng tài chính của bạn
           </p>
-          <p className="mt-4 text-center text-muted-foreground max-w-md text-sm leading-relaxed">
-            AI-powered portfolio analysis, market insights, risk assessment, and rebalancing — all in one conversation.
-          </p>
+          {user ? (
+            <p className="mt-4 text-center text-muted-foreground max-w-md text-sm leading-relaxed">
+              Welcome back, <span className="font-semibold text-foreground">{user.full_name || user.username}</span>! 
+              Ready to analyze your portfolio and explore market opportunities?
+            </p>
+          ) : (
+            <p className="mt-4 text-center text-muted-foreground max-w-md text-sm leading-relaxed">
+              AlphaLens là trợ lý AI giúp bạn phân tích danh mục đầu tư một cách cá nhân hóa, dựa trên mục tiêu tài chính, khẩu vị rủi ro và tài sản hiện tại của bạn.
+            </p>
+          )}
         </motion.div>
       )}
 
@@ -97,7 +125,7 @@ export function ChatPanel() {
           transition={{ delay: 0.15 }}
           className="rounded-2xl border border-border bg-card p-6 shadow-sm"
         >
-          <h3 className="text-sm font-semibold text-foreground mb-4">What's your goal?</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-4">Mục tiêu của bạn</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: "Portfolio Analysis", emoji: "📊" },
