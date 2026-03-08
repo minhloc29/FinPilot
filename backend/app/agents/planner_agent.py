@@ -89,6 +89,7 @@ Classify into one of: portfolio_analysis, market_research, risk_assessment, news
             }
         ]
         response = await super().chat(chat_history)
+        print(f"check response: {response}")
         return response.strip().lower()
 
     async def _create_agent_plan(self, intent: str, message: str) -> Dict[str, Any]:
@@ -110,6 +111,7 @@ Classify into one of: portfolio_analysis, market_research, risk_assessment, news
         if not plan:
             plan["market_data"] = {"action": "fetch"}
 
+        print(f"Check plan: {plan}")
         return plan
 
     async def _execute_plan(self, plan: Dict[str, Any], message: str) -> Dict[str, Any]:

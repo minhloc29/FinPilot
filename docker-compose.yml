@@ -19,7 +19,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: financial_copilot_redis
+      : financial_copilot_redis
     command: redis-server /usr/local/etc/redis/redis.conf
     ports:
       - "6379:6379"

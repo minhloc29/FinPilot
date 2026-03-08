@@ -1,0 +1,9 @@
+{
+    "model": "Gemma-3-27B",
+    "base_url": "$LLM_API_BASE_URL",
+    "api_key": "$FCI_DEV_API_KEY",
+    "max_tokens": 4096,
+    "seed": 42,
+    "temperature": 0,
+    "top_p": 1
+}

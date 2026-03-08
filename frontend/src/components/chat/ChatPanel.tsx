@@ -72,7 +72,7 @@ export function ChatPanel() {
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 glow-primary mb-6">
             <TrendingUp className="h-7 w-7 text-primary" />
           </div>
-          <h1 className="text-4xl font-bold text-foreground tracking-tight">FinAssist</h1>
+          <h1 className="text-4xl font-bold text-foreground tracking-tight">AlphaLens</h1>
           <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             Unlock Your Financial Potential
           </p>

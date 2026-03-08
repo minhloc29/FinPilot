@@ -1,0 +1,9 @@
+{
+    "model": "Gemma-3-27B-engage",
+    "base_url": "https://gen-dev-api.fci.vn",
+    "api_key": "$FCI_DEV_API_KEY",
+    "max_tokens": 4096,
+    "seed": 42,
+    "temperature": 0,
+    "top_p": 1
+}

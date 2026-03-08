@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logger import logger
-from app.api.routes import chat, portfolio, health
+from app.api.routes import chat, portfolio, health, auth
 
 app = FastAPI(
     title="AI Financial Copilot API",
@@ -24,6 +24,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 app.include_router(portfolio.router, prefix="/api/v1", tags=["portfolio"])
 

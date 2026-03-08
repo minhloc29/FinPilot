@@ -21,7 +21,7 @@ class Settings(BaseSettings):
         "http://localhost:3000", "http://localhost:8000", "http://localhost:8080"]
 
     # LLM Configuration
-    DEFAULT_MODEL: str = "Qwen3-32B"
+    DEFAULT_MODEL: str = "gemma-3-27b-it"
     TEMPERATURE: float = 0.7
     MAX_TOKENS: int = 2000
 
