@@ -32,10 +32,7 @@ class PlannerAgent(BaseAgent):
         }
 
     async def chat(self, chat_history: List[Dict[str, str]]) -> str:
-        """
-        Override base chat method to enable agent orchestration with conversation context
-        """
-        # Extract the latest user message from chat history
+       
         user_message = ""
         for message in reversed(chat_history):
             if message.get("role") == "user":
@@ -45,14 +42,12 @@ class PlannerAgent(BaseAgent):
         if not user_message:
             return "I didn't receive a message. How can I help you with your finances?"
 
-        # Use the process method to orchestrate agents
         result = await self.process(
             message=user_message,
             conversation_id=None,
             user_id=None
         )
 
-        # Return just the message text to match BaseAgent.chat() signature
         return result["message"]
 
     async def process(self, message: str, conversation_id: str = None, user_id: str = None) -> Dict[str, Any]:

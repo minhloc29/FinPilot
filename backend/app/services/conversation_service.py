@@ -3,16 +3,21 @@ Conversation service for managing multi-turn conversations
 """
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
+from app.db.redis_client import redis_client
 from app.models.conversation import Conversation, Message
 from app.core.logger import logger
 import uuid
-
+import json
 
 class ConversationService:
-    """
-    Service for managing conversations and message history
-    """
 
+    CACHE_TTL = 3600
+    MAX_CACHE_MESSAGES = 20
+    
+    @staticmethod
+    def _redis_key(conversation_id: str) -> str:
+        return f"chat:conversation:{conversation_id}"
+    
     @staticmethod
     def create_conversation(db: Session, user_id: Optional[str] = None) -> str:
         """
@@ -37,6 +42,13 @@ class ConversationService:
         Get conversation message history in the format required by base_agent
         Returns list of {"role": "user/assistant", "content": "message"}
         """
+        
+        redis_key = ConversationService._redis_key(conversation_id)
+        cached = redis_client.get(redis_key)
+        if cached:
+            print(f"Detech redis cache: {cached}")
+            return json.loads(cached)
+        
         conversation = db.query(Conversation).filter(
             Conversation.id == conversation_id
         ).first()
@@ -49,10 +61,18 @@ class ConversationService:
             Message.conversation_id == conversation_id
         ).order_by(Message.created_at).all()
 
-        return [
+        history = [
             {"role": msg.role, "content": msg.content}
             for msg in messages
         ]
+
+        redis_client.set(
+            redis_key,
+            json.dumps(history[-ConversationService.MAX_CACHE_MESSAGES:]),
+            ex=ConversationService.CACHE_TTL
+        )
+
+        return history
 
     @staticmethod
     def add_message(
@@ -61,9 +81,7 @@ class ConversationService:
         role: str,
         content: str
     ) -> None:
-        """
-        Add a message to the conversation
-        """
+        
         message = Message(
             conversation_id=conversation_id,
             role=role,
@@ -71,6 +89,26 @@ class ConversationService:
         )
         db.add(message)
         db.commit()
+        
+        redis_key = ConversationService._redis_key(conversation_id)
+        cached = redis_client.get(redis_key)
+        
+        if cached:
+            print(f"Detech redis cache: {cached}")
+            history = json.loads(cached)
+
+            history.append({
+                "role": role,
+                "content": content
+            })
+
+            history = history[-ConversationService.MAX_CACHE_MESSAGES:]
+
+            redis_client.set(
+                redis_key,
+                json.dumps(history),
+                ex=ConversationService.CACHE_TTL
+            )
 
     @staticmethod
     def get_or_create_conversation(
@@ -78,9 +116,7 @@ class ConversationService:
         conversation_id: Optional[str],
         user_id: Optional[str] = None
     ) -> str:
-        """
-        Get existing conversation or create a new one if it doesn't exist
-        """
+        
         if conversation_id:
             conversation = db.query(Conversation).filter(
                 Conversation.id == conversation_id
@@ -88,7 +124,6 @@ class ConversationService:
             if conversation:
                 return conversation_id
 
-        # Create new conversation if not found or not provided
         return ConversationService.create_conversation(db, user_id)
 
     @staticmethod
@@ -97,9 +132,7 @@ class ConversationService:
         conversation_id: str,
         title: str
     ) -> None:
-        """
-        Update conversation title
-        """
+        
         conversation = db.query(Conversation).filter(
             Conversation.id == conversation_id
         ).first()
