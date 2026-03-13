@@ -84,7 +84,7 @@ class MarketDataAgent(BaseAgent):
 
     async def handle_quote(self, symbol):
 
-        cached = self.cache.get(symbol)
+        cached = self.cache.get(("quote", symbol))
 
         if cached:
             return cached
