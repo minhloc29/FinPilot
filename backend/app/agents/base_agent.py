@@ -86,3 +86,18 @@ class BaseAgent:
             break  
 
         return response
+    async def llm_call(
+        self,
+        prompt: str
+    ) -> str:
+
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            stream=False,
+        )
+
+        return response.choices[0].message.content
