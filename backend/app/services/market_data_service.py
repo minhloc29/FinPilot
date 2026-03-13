@@ -2,16 +2,24 @@
 Market data service - integrates VNStock API
 """
 
-from vnstock import Quote, Listing
-from app.core.logger import logger
 import asyncio
 from typing import Dict, Any, List
+
+from vnstock import Quote, Listing
+
+from app.core.logger import logger
 
 
 class MarketDataService:
 
+    def _get_quote_sync(
+        self,
+        symbol: str,
+        start: str,
+        end: str,
+        interval: str
+    ) -> Dict[str, Any] | None:
 
-    def _get_quote_sync(self, symbol: str, start: str, end: str, interval: str):
         quote = Quote(symbol=symbol, source="VCI")
 
         df = quote.history(
@@ -34,7 +42,13 @@ class MarketDataService:
             "volume": int(latest["volume"]),
         }
 
-    def _get_history_sync(self, symbol: str, start: str, end: str, interval: str):
+    def _get_history_sync(
+        self,
+        symbol: str,
+        start: str,
+        end: str,
+        interval: str
+    ) -> Dict[str, Any] | None:
 
         quote = Quote(symbol=symbol, source="VCI")
 
@@ -50,27 +64,32 @@ class MarketDataService:
         return {
             "symbol": symbol,
             "prices": df["close"].tolist(),
-            "dates": df["time"].astype(str).tolist(),
-            "volume": df["volume"].tolist()
+            "opens": df["open"].tolist(),
+            "highs": df["high"].tolist(),
+            "lows": df["low"].tolist(),
+            "volumes": df["volume"].tolist(),
+            "dates": df["time"].astype(str).tolist()
         }
 
-    def _get_indices_sync(self):
+    def _get_indices_sync(self) -> Dict[str, float]:
 
         indices = ["VNINDEX", "HNXINDEX", "UPCOMINDEX"]
-
-        result = {}
+        result: Dict[str, float] = {}
 
         for symbol in indices:
+
             quote = Quote(symbol=symbol, source="VCI")
             df = quote.history(length=1, interval="d")
 
             if not df.empty:
+
                 latest = df.iloc[-1]
+
                 result[symbol] = float(latest["close"])
 
         return result
 
-    def _get_listing_sync(self):
+    def _get_listing_sync(self) -> List[str]:
 
         listing = Listing(source="VCI")
 
@@ -83,11 +102,8 @@ class MarketDataService:
         symbol: str,
         start: str = "2024-01-01",
         end: str = "2026-01-01",
-        interval: str = "1d"
+        interval: str = "1d",
     ) -> Dict[str, Any]:
-        """
-        Get latest quote
-        """
 
         try:
 
@@ -96,7 +112,7 @@ class MarketDataService:
                 symbol,
                 start,
                 end,
-                interval
+                interval,
             )
 
             if data is None:
@@ -105,7 +121,9 @@ class MarketDataService:
             return data
 
         except Exception as e:
+
             logger.error(f"Market data error: {e}")
+
             return {"error": str(e)}
 
     async def get_price_history(
@@ -113,11 +131,8 @@ class MarketDataService:
         symbol: str,
         start: str,
         end: str,
-        interval: str = "1d"
+        interval: str = "1d",
     ) -> Dict[str, Any]:
-        """
-        Get historical price data
-        """
 
         try:
 
@@ -126,7 +141,7 @@ class MarketDataService:
                 symbol,
                 start,
                 end,
-                interval
+                interval,
             )
 
             if data is None:
@@ -135,13 +150,12 @@ class MarketDataService:
             return data
 
         except Exception as e:
+
             logger.error(f"History fetch error: {e}")
+
             return {"error": str(e)}
 
     async def get_market_indices(self) -> Dict[str, float]:
-        """
-        Get VN market indices
-        """
 
         try:
 
@@ -150,13 +164,12 @@ class MarketDataService:
             return data
 
         except Exception as e:
+
             logger.error(f"Index fetch error: {e}")
+
             return {"error": str(e)}
 
     async def get_all_symbols(self) -> List[str]:
-        """
-        Get all Vietnamese stock symbols
-        """
 
         try:
 
@@ -165,5 +178,7 @@ class MarketDataService:
             return symbols
 
         except Exception as e:
+
             logger.error(f"Listing error: {e}")
+
             return []
