@@ -4,7 +4,7 @@ import { ChatInput } from "./ChatInput";
 import { Bot, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiClient } from "@/services/api";
+import { sendAuthenticatedChatMessage, sendChatMessage } from "@/services/chatApi";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -41,7 +41,7 @@ export function ChatPanel() {
     try {
       // Call backend API
       const response = token 
-        ? await apiClient.sendAuthenticatedChatMessage(
+        ? await sendAuthenticatedChatMessage(
             { 
               message: content, 
               conversation_id: conversationId,
@@ -49,7 +49,7 @@ export function ChatPanel() {
             },
             token
           )
-        : await apiClient.sendChatMessage({ 
+        : await sendChatMessage({ 
             message: content,
             conversation_id: conversationId
           });

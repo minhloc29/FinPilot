@@ -4,7 +4,9 @@ Authentication service for user management
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
-from app.models.user import User
+from app.models.user import User, UserProfile
+from app.models.risk_profile import RiskProfile
+from app.models.portfolio import Portfolio
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.core.logger import logger
 from datetime import timedelta
@@ -16,14 +18,12 @@ class AuthService:
     def create_user(db: Session, email: str, password: str, username: str,
                     full_name: str = None, phone_number: str = None) -> User:
 
-        print("HIHI")
         try:
             # Check if user already exists
             existing_user = db.query(User).filter(
                 (User.email == email) | (User.username == username)
             ).first()
 
-            print(f"Check existing: {existing_user}")
             if existing_user:
                 if existing_user.email == email:
                     raise HTTPException(
@@ -38,7 +38,7 @@ class AuthService:
 
             # Create new user
             hashed_password = get_password_hash(password)
-            print(f"Check hash: {hashed_password}")
+
             user = User(
                 email=email,
                 hashed_password=hashed_password,
@@ -50,7 +50,18 @@ class AuthService:
             )
 
             db.add(user)
+
+            db.flush()
+
+            profile = UserProfile(user_id=user.id)
+            risk = RiskProfile(user_id=user.id)
+            portfolio = Portfolio(user_id=user.id, name = "My Portfolio")
+            db.add(profile)
+            db.add(risk)
+            db.add(portfolio)
+
             db.commit()
+
             db.refresh(user)
 
             logger.info(f"New user created: {email}")

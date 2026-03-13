@@ -21,6 +21,7 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
+      console.log("Check here")
       if (isLogin) {
         // Login
         await login(email, password);

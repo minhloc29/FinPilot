@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { apiClient, User } from "@/services/api";
+import { getCurrentUser, login as loginApi, register as registerApi, logout as logoutApi, User } from "@/services/authApi";
 
 interface AuthContextType {
   user: User | null;
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedToken = localStorage.getItem("access_token");
       if (storedToken) {
         try {
-          const userData = await apiClient.getCurrentUser(storedToken);
+          const userData = await getCurrentUser(storedToken);
           setUser(userData);
           setToken(storedToken);
         } catch (error) {
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiClient.login(email, password);
+      const response = await loginApi(email, password);
       setUser(response.user);
       setToken(response.access_token);
       localStorage.setItem("access_token", response.access_token);
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (data: RegisterData) => {
     try {
-      const response = await apiClient.register(data);
+      const response = await registerApi(data);
       setUser(response.user);
       setToken(response.access_token);
       localStorage.setItem("access_token", response.access_token);
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     if (token) {
-      apiClient.logout(token).catch(console.error);
+      logoutApi(token).catch(console.error);
     }
     setUser(null);
     setToken(null);

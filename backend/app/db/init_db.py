@@ -3,6 +3,7 @@ Database initialization
 """
 from app.models.base import Base
 from app.models.user import User
+from app.models.risk_profile import RiskProfile
 from app.models.conversation import Conversation, Message
 from app.models.portfolio import Portfolio, Holding
 from app.db.session import engine

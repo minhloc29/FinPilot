@@ -33,7 +33,7 @@ export function StepRisk({ data, update }: Props) {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Label className="text-sm font-semibold">Risk Profile</Label>
+        <Label className="text-sm font-semibold">Hồ sơ rủi ro</Label>
         <RadioGroup
           value={data.risk_profile}
           onValueChange={(v) => update({ risk_profile: v as OnboardingData["risk_profile"] })}

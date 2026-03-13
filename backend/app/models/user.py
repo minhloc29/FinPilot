@@ -1,7 +1,7 @@
 """
 User model
 """
-from sqlalchemy import Column, String, Boolean, Integer, Float, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, Float, ForeignKey, JSON, Text
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
 
@@ -17,22 +17,25 @@ class User(BaseModel):
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
 
-    # Relationship
+    # Relationships
     profile = relationship("UserProfile", back_populates="user", uselist=False)
+    risk_profile = relationship(
+        "RiskProfile", back_populates="user", uselist=False)
 
 
 class UserProfile(BaseModel):
     __tablename__ = "user_profiles"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
-    risk_profile = Column(String)  # conservative, moderate, aggressive
-    capital = Column(Float)
-    time_horizon = Column(String)  # short, medium, long
-    income_needed = Column(Float)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, unique=True)
+
+    # Personal Profile
+    age = Column(Integer)
+    country = Column(String)
+    investment_experience = Column(String)  # beginner, intermediate, advanced
+    annual_income = Column(Float)
+    monthly_savings = Column(Float)
+    financial_goal = Column(String)
 
     # Relationship
     user = relationship("User", back_populates="profile")
-
-
-
-    

@@ -15,7 +15,18 @@ export function StepPortfolio({ data, update }: Props) {
 
   const addItem = () => {
     if (!draft.ticker.trim() || draft.shares <= 0) return;
-    update({ portfolio: [...data.portfolio, { ...draft, ticker: draft.ticker.toUpperCase().trim() }] });
+
+    update({
+      portfolio: [
+        ...data.portfolio,
+        {
+          ticker: draft.ticker.toUpperCase().trim(),
+          shares: draft.shares,
+          avg_price: draft.avg_price,
+        },
+      ],
+    });
+
     setDraft({ ticker: "", shares: 0, avg_price: 0 });
   };
 
@@ -29,7 +40,6 @@ export function StepPortfolio({ data, update }: Props) {
         Add the stocks or assets you currently own. This is optional but helps the AI give better advice.
       </p>
 
-      {/* Existing items */}
       {data.portfolio.length > 0 && (
         <div className="space-y-2">
           {data.portfolio.map((item, i) => (
@@ -55,7 +65,6 @@ export function StepPortfolio({ data, update }: Props) {
         </div>
       )}
 
-      {/* Add form */}
       <div className="rounded-xl border border-dashed border-border p-4 space-y-3">
         <Label className="text-xs font-semibold text-muted-foreground">Add Asset</Label>
         <div className="grid grid-cols-3 gap-3">

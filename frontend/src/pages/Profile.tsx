@@ -56,12 +56,12 @@ export default function Profile() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-              <p className="text-sm text-muted-foreground mt-1">Your financial overview & investment preferences</p>
+              <h1 className="text-2xl font-bold text-foreground">Hồ sơ</h1>
+              <p className="text-sm text-muted-foreground mt-1">Tổng quan tài chính và sở thích đầu tư của bạn</p>
             </div>
             <Link to="/onboarding">
               <Button variant="outline" className="rounded-full gap-2">
-                <Settings2 className="h-4 w-4" /> Edit Profile
+                <Settings2 className="h-4 w-4" /> Chỉnh sửa
               </Button>
             </Link>
           </div>
@@ -72,7 +72,7 @@ export default function Profile() {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
                 <User className="h-4.5 w-4.5 text-primary" />
               </div>
-              <h2 className="text-lg font-semibold text-foreground">Personal Information</h2>
+              <h2 className="text-lg font-semibold text-foreground">Thông tin cá nhân</h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <InfoItem label="Age" value={`${data.age} years`} />
@@ -111,7 +111,7 @@ export default function Profile() {
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
                   <Briefcase className="h-4.5 w-4.5 text-primary" />
                 </div>
-                <h2 className="text-lg font-semibold text-foreground">Portfolio Holdings</h2>
+                <h2 className="text-lg font-semibold text-foreground">Danh mục đầu tư</h2>
               </div>
               <span className="text-sm font-bold text-foreground">
                 ${totalPortfolioValue.toLocaleString()}
@@ -119,7 +119,7 @@ export default function Profile() {
             </div>
 
             {data.portfolio.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No holdings added yet.</p>
+              <p className="text-sm text-muted-foreground">Chưa có danh mục nào được thêm vào.</p>
             ) : (
               <div className="space-y-2">
                 <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground px-3 pb-1">
@@ -158,7 +158,7 @@ export default function Profile() {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
                 <DollarSign className="h-4.5 w-4.5 text-primary" />
               </div>
-              <h2 className="text-lg font-semibold text-foreground">Investment Plan</h2>
+              <h2 className="text-lg font-semibold text-foreground">Kế hoạch đầu tư</h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <InfoItem label="Capital" value={`$${data.capital.toLocaleString()}`} />

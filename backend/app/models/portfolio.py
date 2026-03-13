@@ -9,10 +9,8 @@ from app.models.base import BaseModel
 class Portfolio(BaseModel):
     __tablename__ = "portfolios"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    name = Column(String, nullable=False)
-    description = Column(String)
-    total_value = Column(Float, default=0.0)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    name = Column(String, nullable=True)
 
     # Relationship
     holdings = relationship("Holding", back_populates="portfolio")
@@ -21,12 +19,12 @@ class Portfolio(BaseModel):
 class Holding(BaseModel):
     __tablename__ = "holdings"
 
-    portfolio_id = Column(Integer, ForeignKey("portfolios.id"), nullable=False)
-    symbol = Column(String, nullable=False)
-    shares = Column(Float, nullable=False)
-    average_cost = Column(Float)
-    current_value = Column(Float)
-    message_metadata = Column(JSON)
+    portfolio_id = Column(Integer, ForeignKey("portfolios.id"), nullable=True)
+    ticker = Column(String, nullable=True)
+    shares = Column(Float, nullable=True)
+    average_cost = Column(Float, nullable=True)
+    current_value = Column(Float, nullable=True)
+    message_metadata = Column(JSON, nullable=True)
 
     # Relationship
     portfolio = relationship("Portfolio", back_populates="holdings")
