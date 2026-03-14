@@ -56,7 +56,7 @@ class QueryParserAgent(BaseAgent):
     Return JSON only.
     """
 
-        response = await self.llm_call(prompt)
+        response = await self.complete(prompt)
 
         try:
 

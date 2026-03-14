@@ -11,8 +11,7 @@ class Portfolio(BaseModel):
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     name = Column(String, nullable=True)
-
-    # Relationship
+    description = Column(String ,nullable = True)
     holdings = relationship("Holding", back_populates="portfolio")
 
 

@@ -14,7 +14,7 @@ class MarketDataService:
 
     def _get_quote_sync(
         self,
-        symbol: str,
+        symbol: str,    
         start: str,
         end: str,
         interval: str

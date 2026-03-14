@@ -52,7 +52,6 @@ class UserProfileService:
                 if field in payload:
                     setattr(profile, field, payload[field])
 
-            print(f"Profile_fields: {profile_fields}")
             risk = UserProfileService.get_risk_profile(db=db, user_id=user_id)
             risk_keys = {"risk_profile", "max_drawdown_tolerance",
                          "investment_horizon_years"}

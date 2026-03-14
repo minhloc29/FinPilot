@@ -66,6 +66,13 @@ class BaseAgent:
 
         return remove_reasoning_tags(full_response)
 
+    async def complete(self, prompt: str) -> str:
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+        return await self.stream_response(messages)
+
     async def chat(
         self,
         chat_history: List[Dict[str, str]],

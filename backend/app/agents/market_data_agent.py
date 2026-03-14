@@ -1,3 +1,5 @@
+import asyncio
+import json
 from typing import Dict, Any
 
 from app.agents.base_agent import BaseAgent
@@ -13,7 +15,7 @@ from app.data.symbol_database import SymbolDatabase
 
 from app.core.config import settings
 from app.core.logger import logger
-
+from app.utils.file_utils import read_txt
 
 class MarketDataAgent(BaseAgent):
 
@@ -37,7 +39,7 @@ class MarketDataAgent(BaseAgent):
         self.indicators = IndicatorEngine()
 
         self.ranking_engine = RankingEngine(self.market_service)
-
+        self.explanation_prompt = read_txt("./prompts/market_agent_explanation.txt")
         self.cache = QuoteCache()
 
     async def _ensure_symbol_db(self):
@@ -80,7 +82,10 @@ class MarketDataAgent(BaseAgent):
                 end="2026-01-01"
             )
 
-        return await self.handle_quote(symbol)
+        full_explanation_prompt = self.explanation_prompt.format(result = await self.handle_quote(symbol))
+        natural_response = await self.complete(full_explanation_prompt)
+        
+        return natural_response
 
     async def handle_quote(self, symbol):
 
@@ -137,4 +142,40 @@ class MarketDataAgent(BaseAgent):
 
         self.cache.set(symbol, result)
 
-        return result 
+        return result
+
+
+async def _run_local_test() -> None:
+    agent = MarketDataAgent()
+
+    print("=== MarketDataAgent Query Test ===")
+    print("Type a natural query, for example:")
+    print("- Gia hien tai cua FPT la bao nhieu?")
+    print("- Cho toi chi so VNINDEX")
+    print("- Lich su gia VNM")
+    print("Type 'exit' to quit.\n")
+
+    while True:
+
+        message = input("Query> ").strip()
+
+        if not message:
+            continue
+
+        if message.lower() in {"exit", "quit", "q"}:
+            print("Bye")
+            break
+
+        try:
+            result = await agent.process({"message": message})
+            print(result)
+        except Exception as e:
+            logger.error(f"Query processing failed: {e}")
+            result = {"error": str(e)}
+
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        print()
+
+
+if __name__ == "__main__":
+    asyncio.run(_run_local_test())

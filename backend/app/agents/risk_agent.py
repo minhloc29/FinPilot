@@ -9,9 +9,7 @@ from app.core.config import settings
 
 
 class RiskAgent(BaseAgent):
-    """
-    Assesses portfolio risk and provides risk metrics
-    """
+
 
     def __init__(self):
         super().__init__(
