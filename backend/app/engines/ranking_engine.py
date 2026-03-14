@@ -1,52 +1,31 @@
-from typing import List
-import asyncio
+from typing import List, Dict
 
 
 class RankingEngine:
 
-    def __init__(self, market_service):
-        self.market_service = market_service
-
-    async def _safe_quote(self, symbol, sem):
-
-        async with sem:
-            return await self.market_service.get_quote(symbol)
-
-    async def rank_by_price(
+    def rank(
         self,
-        symbols: List[str],
+        snapshot: Dict[str, dict],
+        metric: str = "price",
         limit: int = 5
     ) -> List[dict]:
 
-        sem = asyncio.Semaphore(20)
-
-        tasks = [
-            self._safe_quote(symbol, sem)
-            for symbol in symbols
-        ]
-
-        quotes = await asyncio.gather(
-            *tasks,
-            return_exceptions=True
-        )
-
         results = []
 
-        for quote in quotes:
+        for symbol, item in snapshot.items():
 
-            if isinstance(quote, Exception):
-                continue
+            value = item.get(metric)
 
-            if not quote or "error" in quote:
+            if value is None:
                 continue
 
             results.append({
-                "symbol": quote["symbol"],
-                "price": quote["price"]
+                "symbol": symbol,
+                metric: value
             })
 
         results.sort(
-            key=lambda x: x["price"],
+            key=lambda x: x[metric],
             reverse=True
         )
 
