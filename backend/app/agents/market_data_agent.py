@@ -98,9 +98,7 @@ class MarketDataAgent(BaseAgent):
         return {"results": results}
 
     async def _handle_quote_intent(self, task, symbol):
-        snapshot = await self.data_loader.get_snapshot()
-
-        quote = snapshot.get(symbol)
+        quote = await self.market_service.get_quote(symbol)
 
         if quote:
             return quote

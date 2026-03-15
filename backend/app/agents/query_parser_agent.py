@@ -28,7 +28,7 @@ class QueryParserAgent(BaseAgent):
             intent (required)
             symbol (optional)
             sector (optional)
-            metric (optional) (rsi | ma | ema | macd | bollinger | volatility)
+            metric (optional) (rsi | ma | ema | macd | bollinger | volatility | change_percent)
             days (optional)
             limit (optional)
 
@@ -56,6 +56,7 @@ class QueryParserAgent(BaseAgent):
             - Queries with "top", "highest", "ranking" → ranking.
             - If the query mentions a time range like "last 7 days", "1 month", "30 days", extract it into `days`.
             - `limit` is used only for ranking queries (default = 5).
+            - top gainers and top losers should be ranking with metric change_percent
             Output rules:
             Return ONLY valid JSON.
             No explanation.

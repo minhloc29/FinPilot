@@ -251,5 +251,5 @@ class SymbolDataLoader:
         )
 
         self.history_cache[key] = history
-
+        self.history_timestamp[key] = now
         return history
