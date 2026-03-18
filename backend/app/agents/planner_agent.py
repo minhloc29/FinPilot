@@ -54,11 +54,15 @@ class PlannerAgent(BaseAgent):
        
         # logger.info(f"Planning response for message: {message[:50]}...")
 
-        intent = await self._analyze_intent(message)
-        agent_plan = await self._create_agent_plan(intent, message)
-        results = await self._execute_plan(agent_plan, message)
-        response = await self._synthesize_response(results, message)
+        # intent = await self._analyze_intent(message)
+        # agent_plan = await self._create_agent_plan(intent, message)
+        # results = await self._execute_plan(agent_plan, message)
+        # response = await self._synthesize_response(results, message)
 
+        intent = "HIHI"
+        agent_plan = {}
+        response = await self.llm_call(message)
+        results = {}
         return {
             "message": response,
             "conversation_id": conversation_id or "new_conversation",

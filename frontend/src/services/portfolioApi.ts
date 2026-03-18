@@ -24,7 +24,6 @@ export interface Portfolio {
 export async function createPortfolio(
   data: {
     name: string
-    description?: string
     holdings: {
       symbol: string
       shares: number

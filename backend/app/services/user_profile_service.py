@@ -149,6 +149,10 @@ class UserProfileService:
 
         total_value = 0.0
         for item in portfolio_items:
+
+            if hasattr(item, "model_dump"):  # pydantic object
+                item = item.model_dump()
+
             ticker = str(item.get("ticker", "")).upper().strip()
             shares = float(item.get("shares", 0) or 0)
             avg_price = float(item.get("avg_price", 0) or 0)

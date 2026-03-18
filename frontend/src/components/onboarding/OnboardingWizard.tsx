@@ -7,7 +7,6 @@ import { StepRisk } from "./steps/StepRisk";
 import { StepPortfolio } from "./steps/StepPortfolio";
 import { StepCapital } from "./steps/StepCapital";
 import { StepPreferences } from "./steps/StepPreferences";
-import { updateUserProfile } from "@/services/profileApi";
 
 export interface PortfolioItem {
   ticker: string;
@@ -108,8 +107,6 @@ interface OnboardingWizardProps {
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<OnboardingData>(DEFAULT_DATA);
-  const [loading, setLoading] = useState(false);
-
   
   const updateData = (partial: Partial<OnboardingData>) => {
     setData((prev) => ({ ...prev, ...partial }));
@@ -123,20 +120,9 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     if (step > 0) setStep(step - 1);
   };
 
-  const finish = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) throw new Error("Not authenticated");
-      await updateUserProfile(data, token);
-
-      onComplete(data); // optional navigation after success
-    } catch (err) {
-      console.error("Failed to save onboarding:", err);
-    } finally {
-      setLoading(false);
-    }
+  const finish = () => {
+    console.log("FINAL DATA:", data);
+    onComplete(data);
   };
 
   return (
@@ -214,11 +200,10 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         ) : (
           <Button
             onClick={finish}
-            disabled={loading}
             className="gap-2 rounded-full bg-primary"
           >
             <Sparkles className="h-4 w-4" />
-            {loading ? "Saving..." : "Phân tích bằng AI"}
+            Phân tích bằng AI
           </Button>
         )}
       </div>

@@ -15,7 +15,6 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
 
     try:
         logger.info(f"Received chat request: {request.message[:50]}...")
-
         conversation_id = ConversationService.get_or_create_conversation(
             db=db,
             conversation_id=request.conversation_id,

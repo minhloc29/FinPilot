@@ -6,6 +6,14 @@ import string
 from typing import Dict
 
 import json_repair
+import re
+
+def make_cache_key(messages):
+    serialized = json.dumps(messages, sort_keys=True)
+    return "llm_cache:" + hashlib.sha256(serialized.encode()).hexdigest()
+
+def normalize(text: str) -> str:
+    return re.sub(r"\s+", "_", re.sub(r"[^\w\s]", "", text.lower()))
 
 
 def compute_hash(content: str, hash_type="sha256") -> str:
@@ -268,53 +276,6 @@ def extract_json_from_text(
         return None
 
 
-def extract_xml_from_text(text: str, extract_all: bool = False) -> str | list[str]:
-    try:
-        xml_tags = []
-        used_positions = set()
-
-        xml_decl_matches = list(re.finditer(r"<\?xml[^>]*\?>", text, re.DOTALL))
-
-        for xml_decl_match in xml_decl_matches:
-            remaining_text = text[xml_decl_match.end() :]
-            root_tag_match = re.match(r"\s*<([a-zA-Z_][\w\-.:]*)", remaining_text)
-
-            if root_tag_match:
-                root_tag_name = root_tag_match.group(1)
-                full_pattern = rf"<\?xml[^>]*\?>\s*<{re.escape(root_tag_name)}[^>]*>.*?</{re.escape(root_tag_name)}>"
-                full_match = re.match(
-                    full_pattern, text[xml_decl_match.start() :], re.DOTALL
-                )
-
-                if full_match:
-                    xml_tags.append(full_match.group().strip())
-                    used_positions.update(
-                        range(
-                            xml_decl_match.start(),
-                            xml_decl_match.start() + full_match.end(),
-                        )
-                    )
-
-        if not xml_tags:
-            all_matches = list(
-                re.finditer(r"<([a-zA-Z_][\w\-.:]*)[^>]*>.*?</\1>", text, re.DOTALL)
-            )
-
-            for match in all_matches:
-                match_range = range(match.start(), match.end())
-                if not any(pos in used_positions for pos in match_range):
-                    xml_tags.append(match.group().strip())
-                    used_positions.update(match_range)
-
-        if extract_all:
-            return xml_tags if xml_tags else None
-        else:
-            return xml_tags[0] if xml_tags else None
-    except Exception as e:
-        if os.getenv("DEBUG_TOOLKIT", "false").lower() == "true":
-            print(f"Error in extract_xml_from_text({text}, {extract_all}): {e}")
-        return None
-
 
 def extract_integer_numbers_from_text(text: str) -> Dict[str, int]:
     try:
@@ -333,3 +294,12 @@ def extract_integer_numbers_from_text(text: str) -> Dict[str, int]:
         if os.getenv("DEBUG_TOOLKIT", "false").lower() == "true":
             print(f"Error in extract_integer_numbers_from_text({text}): {e}")
         return {}
+
+def resolve_symbol(message: str, symbol_db):
+    tokens = re.findall(r"[A-Z]{2,4}", message.upper())
+
+    for token in tokens:
+        # if symbol_db.has_symbol(token):
+        return token
+
+    return None

@@ -15,28 +15,47 @@ class QueryParserAgent(BaseAgent):
             system_prompt="""
             You are a financial query parser for a Vietnamese stock market assistant.
 
-            Your task is to convert user queries into JSON.
+            Your task is to convert user queries into JSON. One user query may includes many tasks
 
             Supported intents:
             quote
             history
             indices
-            sector_ranking
+            ranking
+            indicator
 
             Fields:
             intent (required)
             symbol (optional)
             sector (optional)
-            metric (price | volume | rsi | ma20 | volatility)
+            metric (optional) (rsi | ma | ema | macd | bollinger | volatility)
+            days (optional)
             limit (optional)
+
+            Output schema:
+
+            {
+                "tasks":[
+                    {
+                        "intent": "...",
+                        "symbol": "...",
+                        "sector": "...",
+                        "metric": "...",
+                        "days": ...,
+                        "limit": ...
+                    }
+                ]
+            }
 
             Rules:
             - Detect stock symbols like VNM, FPT, HPG.
             - Queries about price → quote.
             - Queries about historical price or chart → history.
+            - Queries about indicator → indicator.
             - Queries about VNINDEX/HNXINDEX/UPCOMINDEX → indices.
-            - Queries with "top", "highest", "ranking" → sector_ranking.
-
+            - Queries with "top", "highest", "ranking" → ranking.
+            - If the query mentions a time range like "last 7 days", "1 month", "30 days", extract it into `days`.
+            - `limit` is used only for ranking queries (default = 5).
             Output rules:
             Return ONLY valid JSON.
             No explanation.
@@ -51,12 +70,11 @@ class QueryParserAgent(BaseAgent):
     User query:
     {message}
 
-    Convert it into JSON using the schema defined in the system prompt.
-
+    Convert it into JSON tasks using the schema defined in the system prompt.
     Return JSON only.
     """
 
-        response = await self.complete(prompt)
+        response = await self.llm_call(prompt)
 
         try:
 
@@ -67,12 +85,11 @@ class QueryParserAgent(BaseAgent):
 
             data = json.loads(response)
 
-            if "intent" not in data:
-                data["intent"] = "quote"
+            if "tasks" not in data:
+                return {"tasks": [{"intent": "quote"}]}
 
             return data
 
         except Exception:
 
-            return {"intent": "quote"}
-    
+            return {"tasks": [{"intent": "quote"}]}

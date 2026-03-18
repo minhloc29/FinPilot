@@ -8,23 +8,23 @@ from app.models.conversation import Conversation, Message
 from app.core.logger import logger
 import uuid
 import json
-
+import random
 class ConversationService:
 
     CACHE_TTL = 3600
     MAX_CACHE_MESSAGES = 20
     
     @staticmethod
-    def _redis_key(conversation_id: str) -> str:
+    def _redis_key(conversation_id: int) -> str:
         return f"chat:conversation:{conversation_id}"
     
     @staticmethod
-    def create_conversation(db: Session, user_id: Optional[str] = None) -> str:
+    def create_conversation(db: Session, user_id: Optional[int] = None) -> str:
         """
         Create a new conversation
         """
         conversation = Conversation(
-            id=str(uuid.uuid4()),
+            id=random.randint(1, 10**9),
             user_id=user_id or "anonymous",
             title="New Conversation"
         )
@@ -36,12 +36,8 @@ class ConversationService:
     @staticmethod
     def get_conversation_history(
         db: Session,
-        conversation_id: str
+        conversation_id: int
     ) -> List[Dict[str, str]]:
-        """
-        Get conversation message history in the format required by base_agent
-        Returns list of {"role": "user/assistant", "content": "message"}
-        """
         
         redis_key = ConversationService._redis_key(conversation_id)
         cached = redis_client.get(redis_key)
@@ -59,7 +55,7 @@ class ConversationService:
 
         messages = db.query(Message).filter(
             Message.conversation_id == conversation_id
-        ).order_by(Message.created_at).all()
+        )
 
         history = [
             {"role": msg.role, "content": msg.content}
@@ -77,7 +73,7 @@ class ConversationService:
     @staticmethod
     def add_message(
         db: Session,
-        conversation_id: str,
+        conversation_id: int,
         role: str,
         content: str
     ) -> None:
@@ -113,8 +109,8 @@ class ConversationService:
     @staticmethod
     def get_or_create_conversation(
         db: Session,
-        conversation_id: Optional[str],
-        user_id: Optional[str] = None
+        conversation_id: Optional[int],
+        user_id: Optional[int] = None
     ) -> str:
         
         if conversation_id:
@@ -129,7 +125,7 @@ class ConversationService:
     @staticmethod
     def update_conversation_title(
         db: Session,
-        conversation_id: str,
+        conversation_id: int,
         title: str
     ) -> None:
         

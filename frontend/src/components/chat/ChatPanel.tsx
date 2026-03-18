@@ -8,7 +8,7 @@ import { sendAuthenticatedChatMessage, sendChatMessage } from "@/services/chatAp
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
-  id: string;
+  id: number;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
@@ -17,7 +17,7 @@ interface Message {
 export function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [conversationId, setConversationId] = useState<number | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user, token } = useAuth();
   const { toast } = useToast();
@@ -29,8 +29,9 @@ export function ChatPanel() {
   }, [messages]);
 
   const handleSend = async (content: string) => {
+    console.log("Content: ", content)
     const userMsg: Message = {
-      id: Date.now().toString(),
+      id: Date.now(),
       role: "user",
       content,
       timestamp: new Date(),
@@ -41,24 +42,24 @@ export function ChatPanel() {
     try {
       // Call backend API
       const response = token 
-        ? await sendAuthenticatedChatMessage(
-            { 
-              message: content, 
-              conversation_id: conversationId,
-              user_id: user?.id.toString()
-            },
-            token
-          )
-        : await sendChatMessage({ 
-            message: content,
-            conversation_id: conversationId
-          });
+  ? await sendAuthenticatedChatMessage(
+      { 
+        message: content, 
+        conversation_id: conversationId,
+        user_id: user?.id
+      },
+      token
+    )
+  : await sendChatMessage({ 
+      message: content,
+      conversation_id: conversationId
+    });
 
       // Store conversation ID for continuity
       setConversationId(response.conversation_id);
 
       const assistantMsg: Message = {
-        id: (Date.now() + 1).toString(),
+        id: Date.now() + 1,
         role: "assistant",
         content: response.message,
         timestamp: new Date(),
@@ -110,14 +111,12 @@ export function ChatPanel() {
         </motion.div>
       )}
 
-      {/* Search / Input when no messages */}
       {!hasMessages && (
         <div className="mb-8">
           <ChatInput onSend={handleSend} isLoading={isLoading} />
         </div>
       )}
 
-      {/* Goal section when no messages */}
       {!hasMessages && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -146,7 +145,6 @@ export function ChatPanel() {
         </motion.div>
       )}
 
-      {/* Messages */}
       {hasMessages && (
         <>
           <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-6 mb-4 max-h-[60vh]">

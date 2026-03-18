@@ -1,6 +1,3 @@
-"""
-User model
-"""
 from sqlalchemy import Column, String, Boolean, Integer, Float, ForeignKey, JSON, Text
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
@@ -9,6 +6,7 @@ from app.models.base import BaseModel
 class User(BaseModel):
     __tablename__ = "users"
 
+    id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     username = Column(String, unique=True, index=True)
@@ -26,10 +24,10 @@ class User(BaseModel):
 class UserProfile(BaseModel):
     __tablename__ = "user_profiles"
 
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"),
                      nullable=False, unique=True)
 
-    # Personal Profile
     age = Column(Integer)
     country = Column(String)
     investment_experience = Column(String)  # beginner, intermediate, advanced
@@ -37,5 +35,4 @@ class UserProfile(BaseModel):
     monthly_savings = Column(Float)
     financial_goal = Column(String)
 
-    # Relationship
     user = relationship("User", back_populates="profile")

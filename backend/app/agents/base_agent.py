@@ -4,7 +4,8 @@ from typing import List, Dict, Any, Optional
 
 from openai import AsyncOpenAI
 from app.utils.helpers import remove_reasoning_tags
-
+from app.db.redis_client import redis_client
+from app.utils.string_utils import normalize, make_cache_key
 
 class BaseAgent:
     def __init__(
@@ -36,6 +37,15 @@ class BaseAgent:
         self,
         messages: List[Dict[str, str]],
     ) -> str:
+
+        cache_key = make_cache_key(messages)
+
+        cached = redis_client.get(cache_key)
+
+        if cached:
+            print("[CACHE HIT]")
+            return cached
+
         full_response = ""
         start_time = time.perf_counter()
 
@@ -64,14 +74,15 @@ class BaseAgent:
         latency = (time.perf_counter() - start_time) * 1000
         print(f"\n\n[Latency: {latency:.2f} ms]")
 
-        return remove_reasoning_tags(full_response)
+        cleaned = remove_reasoning_tags(full_response)
 
-    async def complete(self, prompt: str) -> str:
-        messages = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": prompt},
-        ]
-        return await self.stream_response(messages)
+        redis_client.set(
+            cache_key,
+            cleaned,
+            ex=3600  # cache TTL = 1 hour
+        )
+
+        return cleaned
 
     async def chat(
         self,
@@ -93,3 +104,19 @@ class BaseAgent:
             break  
 
         return response
+
+    async def llm_call(
+        self,
+        prompt: str
+    ) -> str:
+
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            stream=False,
+        )
+
+        return response.choices[0].message.content

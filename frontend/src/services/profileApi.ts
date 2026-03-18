@@ -6,7 +6,7 @@ export async function updateUserProfile(
   token: string
 ) {
 
-  console.log(data)
+  
   return request("/api/v1/user-profile", {
     method: "POST",
     headers: {
