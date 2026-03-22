@@ -9,12 +9,13 @@ from app.agents.risk_agent import RiskAgent
 from app.agents.news_agent import NewsAgent
 from app.core.logger import logger
 from app.core.config import settings
-
+import tiktoken
 
 class PlannerAgent(BaseAgent):
     """
     Orchestrates other specialized agents based on user query
     """
+    TOKEN_THRESHOLD = 1000
 
     def __init__(self):
         super().__init__(
@@ -31,8 +32,17 @@ class PlannerAgent(BaseAgent):
             "news": NewsAgent()
         }
 
+    
+    
     async def chat(self, chat_history: List[Dict[str, str]]) -> str:
        
+        token_length = self._calculate_token_length(chat_history)
+        if token_length > self.TOKEN_THRESHOLD:
+            summarized_history = await self._summarize_history(chat_history)
+        else:
+            summarized_history = self._format_chat_history(chat_history)
+
+        # Extract the latest user message
         user_message = ""
         for message in reversed(chat_history):
             if message.get("role") == "user":
@@ -42,34 +52,29 @@ class PlannerAgent(BaseAgent):
         if not user_message:
             return "I didn't receive a message. How can I help you with your finances?"
 
+        # Process the summarized history and user message
         result = await self.process(
             message=user_message,
             conversation_id=None,
-            user_id=None
+            user_id=None,
+            summarized_history=summarized_history
         )
 
         return result["message"]
 
-    async def process(self, message: str, conversation_id: str = None, user_id: str = None) -> Dict[str, Any]:
-       
-        # logger.info(f"Planning response for message: {message[:50]}...")
-
-        # intent = await self._analyze_intent(message)
-        # agent_plan = await self._create_agent_plan(intent, message)
-        # results = await self._execute_plan(agent_plan, message)
-        # response = await self._synthesize_response(results, message)
-
-        intent = "HIHI"
-        agent_plan = {}
-        response = await self.llm_call(message)
+    async def process(self, message: str, conversation_id: str = None, user_id: str = None, summarized_history: str = "") -> Dict[str, Any]:
+        """
+        Processes the user message and generates a response.
+        """
+        response = await self.llm_call(f"{summarized_history}\n\n{message}")
         results = {}
         return {
             "message": response,
             "conversation_id": conversation_id or "new_conversation",
             "sources": results.get("sources", []),
             "metadata": {
-                "intent": intent,
-                "agents_used": list(agent_plan.keys())
+                "intent": "HIHI",  # Placeholder intent
+                "agents_used": []
             }
         }
 

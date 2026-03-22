@@ -8,9 +8,7 @@ from app.core.config import settings
 
 
 class NewsAgent(BaseAgent):
-    """
-    Fetches and analyzes financial news and sentiment
-    """
+    
 
     def __init__(self):
         super().__init__(

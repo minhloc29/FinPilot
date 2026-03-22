@@ -1,9 +1,10 @@
-import os
-from langchain_community.document_loaders import WebBaseLoader
+import tiktoken
 
-os.environ["USER_AGENT"] = "my-rag-bot/1.0"
+enc = tiktoken.encoding_for_model("gpt-4o")
 
-loader = WebBaseLoader("https://www.investopedia.com/terms/i/inflation.asp")
-docs = loader.load()
+text = "Hello, how are you?"
 
-print(docs[0].page_content[:500])
+tokens = enc.encode(text)
+
+print(tokens)        # list of token IDs
+print(len(tokens))   # number of tokens

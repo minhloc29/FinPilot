@@ -6,8 +6,12 @@ from openai import AsyncOpenAI
 from app.utils.helpers import remove_reasoning_tags
 from app.db.redis_client import redis_client
 from app.utils.string_utils import normalize, make_cache_key
-
+from app.core.config import settings
+import tiktoken
 class BaseAgent:
+    
+    TOKEN_THRESHOLD = 1000
+    
     def __init__(
         self,
         api_key: str,
@@ -105,6 +109,45 @@ class BaseAgent:
 
         return response
 
+    def _calculate_token_length(self, chat_history: List[Dict[str, str]]) -> int:
+       
+        encoding = tiktoken.encoding_for_model("gpt-4o")
+        token_count = 0
+        for message in chat_history:
+            content = message.get("content", "")
+            token_count += len(encoding.encode(content))
+        return token_count
+
+    def _format_chat_history(self, chat_history: List[Dict[str, str]]) -> str:
+        """
+        Formats the chat history into a string.
+        """
+        return "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
+
+    async def _summarize_history(self, chat_history: List[Dict[str, str]]) -> str:
+        """
+        Summarizes the chat history to reduce token usage.
+        """
+        if not chat_history:
+            return ""
+
+        # Prepare the summarization prompt
+        summarization_prompt = [
+            {
+                "role": "user",
+                "content": f"""Summarize the following conversation history into a concise summary:
+
+Conversation history:
+{self._format_chat_history(chat_history)}
+
+Provide a summary:"""
+            }
+        ]
+
+        # Call the LLM to summarize the history
+        summary = await super().chat(summarization_prompt)
+        return summary.strip()
+    
     async def llm_call(
         self,
         prompt: str

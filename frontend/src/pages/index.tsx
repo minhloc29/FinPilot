@@ -2,6 +2,7 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { Navbar } from "@/components/layout/Navbar";
 import { TrendingUp, DollarSign, BarChart3, Wallet } from "lucide-react";
 import { AboutSection } from "@/components/landing/AboutSection";
+import MarketSection from "@/components/landing/MarketSection";
 import { Footer } from "@/components/Footer";
 
 
@@ -59,6 +60,7 @@ bottom-0 left-[30%] animate-float"></div>
 
         {/* FEATURES */}
         <AboutSection />
+        <MarketSection />
         
         
          
