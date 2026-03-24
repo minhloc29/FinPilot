@@ -9,8 +9,6 @@ from app.agents.query_parser_agent import QueryParserAgent
 from app.engines.indicator_engine import IndicatorEngine
 from app.engines.ranking_engine import RankingEngine
 
-from app.cache.quote_cache import QuoteCache
-
 from app.core.config import settings
 from app.core.logger import logger
 from app.utils.file_utils import read_txt

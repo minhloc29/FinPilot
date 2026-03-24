@@ -3,7 +3,6 @@ Conversation service for managing multi-turn conversations
 """
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
-from app.db.redis_client import redis_client
 from app.models.conversation import Conversation, Message
 from app.core.logger import logger
 import uuid
@@ -40,10 +39,6 @@ class ConversationService:
     ) -> List[Dict[str, str]]:
         
         redis_key = ConversationService._redis_key(conversation_id)
-        cached = redis_client.get(redis_key)
-        if cached:
-            print(f"Detech redis cache: {cached}")
-            return json.loads(cached)
         
         conversation = db.query(Conversation).filter(
             Conversation.id == conversation_id
@@ -62,11 +57,6 @@ class ConversationService:
             for msg in messages
         ]
 
-        redis_client.set(
-            redis_key,
-            json.dumps(history[-ConversationService.MAX_CACHE_MESSAGES:]),
-            ex=ConversationService.CACHE_TTL
-        )
 
         return history
 
@@ -86,26 +76,7 @@ class ConversationService:
         db.add(message)
         db.commit()
         
-        redis_key = ConversationService._redis_key(conversation_id)
-        cached = redis_client.get(redis_key)
-        
-        if cached:
-            print(f"Detech redis cache: {cached}")
-            history = json.loads(cached)
-
-            history.append({
-                "role": role,
-                "content": content
-            })
-
-            history = history[-ConversationService.MAX_CACHE_MESSAGES:]
-
-            redis_client.set(
-                redis_key,
-                json.dumps(history),
-                ex=ConversationService.CACHE_TTL
-            )
-
+    
     @staticmethod
     def get_or_create_conversation(
         db: Session,

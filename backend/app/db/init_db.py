@@ -1,6 +1,3 @@
-"""
-Database initialization
-"""
 from app.models.base import Base
 from app.models.user import User
 from app.models.risk_profile import RiskProfile
@@ -11,9 +8,7 @@ from app.core.logger import logger
 
 
 def init_db():
-    """
-    Initialize database tables
-    """
+   
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")

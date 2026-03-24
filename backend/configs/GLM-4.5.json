@@ -1,9 +1,0 @@
-{
-    "model": "GLM-4.5",
-    "base_url": "$LLM_API_BASE_URL",
-    "api_key": "$MODAS_API_KEY",
-    "max_tokens": 4096,
-    "seed": 42,
-    "temperature": 0,
-    "top_p": 1
-}

@@ -1,23 +1,21 @@
 import asyncio
 import time
 from typing import List, Dict, Any, Optional
-
 from openai import AsyncOpenAI
 from app.utils.helpers import remove_reasoning_tags
-from app.db.redis_client import redis_client
-from app.utils.string_utils import normalize, make_cache_key
-from app.core.config import settings
+from app.utils.string_utils import normalize, parse_dict_to_string
+
+from app.utils.file_utils import read_txt
+
 import tiktoken
 class BaseAgent:
-    
-    TOKEN_THRESHOLD = 1000
     
     def __init__(
         self,
         api_key: str,
         base_url: str,
         model: str = "gpt-4o-mini",
-        system_prompt: str = "You are a helpful assistant.",
+        system_prompt: str = "Bạn là 1 trợ lý tài chính thông minh.",
         max_iterations: int = 1,
     ):
         self.client = AsyncOpenAI(
@@ -26,6 +24,7 @@ class BaseAgent:
         )
         self.model = model
         self.system_prompt = system_prompt
+        self.summarization_prompt = read_txt("backend/prompts/conversation_summarization_prompt.txt")
         self.max_iterations = max_iterations
 
     def build_context(
@@ -42,14 +41,6 @@ class BaseAgent:
         messages: List[Dict[str, str]],
     ) -> str:
 
-        cache_key = make_cache_key(messages)
-
-        cached = redis_client.get(cache_key)
-
-        if cached:
-            print("[CACHE HIT]")
-            return cached
-
         full_response = ""
         start_time = time.perf_counter()
 
@@ -60,7 +51,7 @@ class BaseAgent:
         )
 
         async for chunk in stream:
-
+            
             if not chunk.choices:
                 continue
 
@@ -68,7 +59,6 @@ class BaseAgent:
 
             if not hasattr(choice, "delta") or choice.delta is None:
                 continue
-
             delta = getattr(choice.delta, "content", None)
 
             if delta:
@@ -79,13 +69,6 @@ class BaseAgent:
         print(f"\n\n[Latency: {latency:.2f} ms]")
 
         cleaned = remove_reasoning_tags(full_response)
-
-        redis_client.set(
-            cache_key,
-            cleaned,
-            ex=3600  # cache TTL = 1 hour
-        )
-
         return cleaned
 
     async def chat(
@@ -118,34 +101,16 @@ class BaseAgent:
             token_count += len(encoding.encode(content))
         return token_count
 
-    def _format_chat_history(self, chat_history: List[Dict[str, str]]) -> str:
-        """
-        Formats the chat history into a string.
-        """
-        return "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
-
     async def _summarize_history(self, chat_history: List[Dict[str, str]]) -> str:
-        """
-        Summarizes the chat history to reduce token usage.
-        """
+        
         if not chat_history:
             return ""
 
-        # Prepare the summarization prompt
-        summarization_prompt = [
-            {
-                "role": "user",
-                "content": f"""Summarize the following conversation history into a concise summary:
-
-Conversation history:
-{self._format_chat_history(chat_history)}
-
-Provide a summary:"""
-            }
-        ]
-
-        # Call the LLM to summarize the history
-        summary = await super().chat(summarization_prompt)
+        full_summarization_prompt = self.summarization_prompt.format(
+            history = parse_dict_to_string(chat_history)
+        )
+        
+        summary = self.llm_call(full_summarization_prompt)
         return summary.strip()
     
     async def llm_call(
@@ -163,3 +128,34 @@ Provide a summary:"""
         )
 
         return response.choices[0].message.content
+    
+    
+if __name__ == "__main__":
+    import asyncio
+    import os
+    from dotenv import load_dotenv
+    
+    async def main():
+        
+        load_dotenv()
+        
+        API_KEY = os.getenv("API_KEY")
+        API_ENDPOINT = os.getenv("API_ENDPOINT")
+        
+        agent = BaseAgent(
+            api_key=API_KEY,
+            base_url=API_ENDPOINT,
+            model="gemma-3-27b-it",
+            system_prompt="You are a helpful assistant.",
+            max_iterations=1,
+        )
+
+        chat_history = [
+            {"role": "user", "content": "Hello, who are you?"}
+        ]
+
+        print("\n=== Response ===")
+        response = await agent.chat(chat_history)
+        print("\nFinal Response:", response)
+
+    asyncio.run(main())

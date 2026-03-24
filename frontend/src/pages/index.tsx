@@ -2,11 +2,23 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { Navbar } from "@/components/layout/Navbar";
 import { TrendingUp, DollarSign, BarChart3, Wallet } from "lucide-react";
 import { AboutSection } from "@/components/landing/AboutSection";
-import MarketSection from "@/components/landing/MarketSection";
+import { HowItWorks } from "@/components/landing/HowItWork";
+import { MissionVision } from "@/components/landing/Mission";
 import { Footer } from "@/components/Footer";
+import { LandingChatPanel } from "@/components/chat/LandingChatPanel";
+import { useNavigate } from "react-router-dom";
 
 
 const Index = () => {
+
+  const navigate = useNavigate();
+
+  const handleStartChat = (message: string) => {
+    navigate("/chat", {
+      state: { firstMessage: message },
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen w-full 
     bg-gradient-to-br from-purple-50 via-blue-50 to-orange-50">
@@ -53,14 +65,15 @@ bottom-0 left-[30%] animate-float"></div>
   blur-3xl opacity-30 rounded-full"></div>
 
   <div className="relative">
-    <ChatPanel />
+    <LandingChatPanel onSend={handleStartChat} />
   </div>
 
 </div>
 
         {/* FEATURES */}
         <AboutSection />
-        <MarketSection />
+        <HowItWorks />
+        <MissionVision />
         
         
          

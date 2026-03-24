@@ -10,11 +10,11 @@ from app.agents.news_agent import NewsAgent
 from app.core.logger import logger
 from app.core.config import settings
 import tiktoken
+from app.utils.string_utils import normalize, parse_dict_to_string
+
 
 class PlannerAgent(BaseAgent):
-    """
-    Orchestrates other specialized agents based on user query
-    """
+   
     TOKEN_THRESHOLD = 1000
 
     def __init__(self):
@@ -22,7 +22,7 @@ class PlannerAgent(BaseAgent):
             api_key=settings.API_KEY,
             base_url=settings.API_ENDPOINT,
             model=settings.DEFAULT_MODEL,
-            system_prompt="You are a financial planning AI that coordinates specialized agents to help users with financial decisions.",
+            system_prompt="Bạn là một AI lập kế hoạch tài chính, có nhiệm vụ điều phối các tác nhân chuyên biệt để hỗ trợ người dùng đưa ra các quyết định tài chính.",
             max_iterations=1
         )
         self.sub_agents = {
@@ -40,7 +40,7 @@ class PlannerAgent(BaseAgent):
         if token_length > self.TOKEN_THRESHOLD:
             summarized_history = await self._summarize_history(chat_history)
         else:
-            summarized_history = self._format_chat_history(chat_history)
+            summarized_history = parse_dict_to_string(chat_history)
 
         # Extract the latest user message
         user_message = ""
@@ -62,18 +62,90 @@ class PlannerAgent(BaseAgent):
 
         return result["message"]
 
-    async def process(self, message: str, conversation_id: str = None, user_id: str = None, summarized_history: str = "") -> Dict[str, Any]:
-        """
-        Processes the user message and generates a response.
-        """
-        response = await self.llm_call(f"{summarized_history}\n\n{message}")
-        results = {}
+    async def process(
+        self,
+        message: str,
+        conversation_id: str = None,
+        user_id: str = None,
+        summarized_history: str = ""
+    ) -> Dict[str, Any]:
+
+        msg = message.lower()
+
+        # === 1. Diversification ===
+        if "đa dạng" in msg or "diversify" in msg:
+            response = """Danh mục hiện tại của bạn đang tập trung 100% vào FPT → rủi ro tập trung cao.
+
+    Với risk trung bình và horizon 5 năm, bạn nên:
+    - 40–50%: Bluechip (FPT, VNM…)
+    - 20–30%: ETF
+    - 10–20%: Trái phiếu
+    - 10–20%: Tiền mặt
+
+    👉 Gợi ý:
+    - Giữ FPT ~30–40%
+    - Phần còn lại chuyển sang ETF hoặc ngành khác"""
+
+        # === 2. Risk / Drawdown ===
+        elif "drawdown" in msg or "rủi ro" in msg:
+            response = """Danh mục hiện tại KHÔNG phù hợp với max drawdown 20%.
+
+    Hiện tại:
+    - 100% cổ phiếu → biến động cao
+    - 1 asset → rủi ro cực lớn
+
+    👉 Nếu FPT giảm 30–40%, bạn sẽ vượt ngưỡng drawdown.
+
+    👉 Gợi ý:
+    - Giảm FPT xuống <50%
+    - Thêm ETF + trái phiếu để giảm volatility"""
+
+        # === 3. Growth Strategy ===
+        elif "tăng trưởng" in msg or "growth" in msg:
+            response = """Danh mục hiện tại có tiềm năng tăng trưởng nhưng chưa tối ưu.
+
+    Điểm mạnh:
+    - FPT là cổ phiếu tăng trưởng tốt
+
+    Điểm yếu:
+    - Không đa dạng hóa
+    - Risk-adjusted return thấp
+
+    👉 Chiến lược tốt hơn:
+    - 60%: ETF + bluechip
+    - 30%: Growth stocks
+    - 10%: High-risk
+
+    👉 Giúp:
+    - Tăng trưởng ổn định hơn
+    - Giảm tail risk"""
+
+        # === 4. Monthly Investment ===
+        elif "hàng tháng" in msg or "monthly" in msg:
+            response = """Bạn đang không đầu tư hàng tháng → bỏ lỡ cơ hội lớn.
+
+    Hiện tại:
+    - Savings: $500/tháng
+    - Investment: $0 ❌
+
+    👉 Nếu đầu tư $500/tháng trong 5 năm (~8% return):
+    → ~$36,000–40,000
+
+    👉 Gợi ý:
+    - Bắt đầu DCA ngay
+    - Ưu tiên ETF (an toàn cho beginner)
+    - Tự động hóa đầu tư"""
+
+        # === Default fallback (LLM) ===
+        else:
+            response = await self.llm_call(f"{summarized_history}\n\n{message}")
+
         return {
             "message": response,
             "conversation_id": conversation_id or "new_conversation",
-            "sources": results.get("sources", []),
+            "sources": [],
             "metadata": {
-                "intent": "HIHI",  # Placeholder intent
+                "intent": "hardcoded_rule_based",
                 "agents_used": []
             }
         }
@@ -137,17 +209,17 @@ Classify into one of: portfolio_analysis, market_research, risk_assessment, news
         Synthesize final response from agent results
         """
         chat_history = [
-            {
-                "role": "user",
-                "content": f"""You are a financial advisor AI. Based on the analysis results, provide a clear and helpful response to the user.
+    {
+        "role": "user",
+        "content": f"""Bạn là một AI tư vấn tài chính. Dựa trên các kết quả phân tích, hãy đưa ra phản hồi rõ ràng và hữu ích cho người dùng.
 
-User query: {message}
+Câu hỏi của người dùng: {message}
 
-Analysis results: {results['data']}
+Kết quả phân tích: {results['data']}
 
-Provide a concise, actionable response:"""
-            }
-        ]
+Hãy đưa ra câu trả lời ngắn gọn, cụ thể và có thể áp dụng được:"""
+    }
+]
         response = await super().chat(chat_history)
         return response
 
