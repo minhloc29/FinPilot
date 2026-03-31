@@ -61,6 +61,7 @@ coverage/
 *.cover
 .pytest_cache/
 htmlcov/
+tests/ 
 
 # Docker
 *.tar

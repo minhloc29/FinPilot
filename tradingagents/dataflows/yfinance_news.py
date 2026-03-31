@@ -130,6 +130,9 @@ def get_global_news_yfinance(
     seen_titles = set()
 
     try:
+        if not hasattr(yf, "Search"):
+            return f"No global news found for {curr_date}"
+
         for query in search_queries:
             search = yf.Search(
                 query=query,

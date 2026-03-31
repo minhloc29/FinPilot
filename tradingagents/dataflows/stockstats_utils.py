@@ -3,7 +3,12 @@ import logging
 
 import pandas as pd
 import yfinance as yf
-from yfinance.exceptions import YFRateLimitError
+try:
+    from yfinance.exceptions import YFRateLimitError
+except ImportError:
+    # Some yfinance versions do not expose YFRateLimitError.
+    class YFRateLimitError(Exception):
+        pass
 from stockstats import wrap
 from typing import Annotated
 import os
