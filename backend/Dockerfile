@@ -11,19 +11,23 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY requirements.txt .
+COPY backend/requirements.txt backend/requirements.txt
 
 # Install Python dependencies
-RUN pip install -r requirements.txt
+RUN pip install -r backend/requirements.txt
 
 # Copy application code
-COPY . .
+COPY backend backend
+COPY tradingagents tradingagents
 
 # Create logs directory
 RUN mkdir -p logs
 
 # Expose port
 EXPOSE 8000
+
+ENV PYTHONPATH=/app
+WORKDIR /app/backend
 
 # Run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

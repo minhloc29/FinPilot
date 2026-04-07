@@ -10,6 +10,7 @@ class ChatRequest(BaseModel):
     conversation_id: Optional[int] = None
     user_id: Optional[int] = None
     system_prompt: Optional[str] = None
+    response_mode: Optional[str] = None
 
 
 class ChatResponse(BaseModel):

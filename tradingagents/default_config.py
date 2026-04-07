@@ -9,9 +9,11 @@ DEFAULT_CONFIG = {
     ),
     # LLM settings
     "llm_provider": "openai",
-    "deep_think_llm": "gpt-5.2",
-    "quick_think_llm": "gpt-5-mini",
-    "backend_url": "https://api.openai.com/v1",
+    # gpt-oss-120b: for deep reasoning (Research Manager, Portfolio Manager)
+    "deep_think_llm": "gpt-oss-120b",
+    # gpt-oss-20b: for fast analysts (market, news, social, fundamentals)
+    "quick_think_llm": "gpt-oss-20b",
+    "backend_url": "https://mkp-api.fptcloud.com/v1",
     # Provider-specific thinking configuration
     "google_thinking_level": None,      # "high", "minimal", etc.
     "openai_reasoning_effort": None,    # "medium", "high", "low"

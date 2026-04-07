@@ -5,6 +5,7 @@ export interface ChatRequest {
   conversation_id?: number
   user_id?: number
   system_prompt?: string
+  response_mode?: "standard" | "brief" | "detailed" | "debate" | "risk" | "educational" | "compare"
 }
 
 export interface ChatResponse {

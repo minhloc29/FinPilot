@@ -1,6 +1,3 @@
-"""
-Authentication dependencies
-"""
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -15,11 +12,8 @@ security = HTTPBearer()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> User:
-    """
-    Dependency to get the current authenticated user from JWT token
-    """
     token = credentials.credentials
 
     payload = decode_access_token(token)
@@ -49,34 +43,18 @@ async def get_current_user(
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user"
+            detail="Inactive user",
         )
 
     return user
 
 
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
-) -> User:
-    """
-    Dependency to ensure user is active
-    """
-    if not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user"
-        )
-    return current_user
-
-
 def get_optional_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(
-        HTTPBearer(auto_error=False)),
-    db: Session = Depends(get_db)
+        HTTPBearer(auto_error=False)
+    ),
+    db: Session = Depends(get_db),
 ) -> Optional[User]:
-    """
-    Dependency to optionally get the current user (doesn't raise error if not authenticated)
-    """
     if credentials is None:
         return None
 

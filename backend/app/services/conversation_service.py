@@ -1,31 +1,43 @@
-"""
-Conversation service for managing multi-turn conversations
-"""
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
 from app.models.conversation import Conversation, Message
+from app.models.user import User
 from app.core.logger import logger
 import uuid
-import json
-import random
+
+
 class ConversationService:
 
-    CACHE_TTL = 3600
-    MAX_CACHE_MESSAGES = 20
-    
+    ANONYMOUS_EMAIL = "anonymous@finpilot.local"
+
     @staticmethod
-    def _redis_key(conversation_id: int) -> str:
-        return f"chat:conversation:{conversation_id}"
-    
+    def _get_or_create_anonymous_user(db: Session) -> User:
+        user = db.query(User).filter(User.email == ConversationService.ANONYMOUS_EMAIL).first()
+        if user:
+            return user
+
+        user = User(
+            email=ConversationService.ANONYMOUS_EMAIL,
+            hashed_password="anonymous-not-used",
+            username="anonymous",
+            full_name="Anonymous User",
+            is_active=True,
+            is_superuser=False,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
     @staticmethod
-    def create_conversation(db: Session, user_id: Optional[int] = None) -> str:
-        """
-        Create a new conversation
-        """
+    def create_conversation(db: Session, user_id: Optional[int] = None) -> int:
+        resolved_user_id = user_id
+        if resolved_user_id is None:
+            resolved_user_id = ConversationService._get_or_create_anonymous_user(db).id
+
         conversation = Conversation(
-            id=random.randint(1, 10**9),
-            user_id=user_id or "anonymous",
-            title="New Conversation"
+            user_id=resolved_user_id,
+            title="New Conversation",
         )
         db.add(conversation)
         db.commit()
@@ -35,55 +47,43 @@ class ConversationService:
     @staticmethod
     def get_conversation_history(
         db: Session,
-        conversation_id: int
+        conversation_id: int,
     ) -> List[Dict[str, str]]:
-        
-        redis_key = ConversationService._redis_key(conversation_id)
-        
         conversation = db.query(Conversation).filter(
             Conversation.id == conversation_id
         ).first()
 
         if not conversation:
-            logger.warning(f"Conversation {conversation_id} not found")
+            logger.warning("Conversation %s not found", conversation_id)
             return []
 
         messages = db.query(Message).filter(
             Message.conversation_id == conversation_id
-        )
+        ).all()
 
-        history = [
-            {"role": msg.role, "content": msg.content}
-            for msg in messages
-        ]
-
-
-        return history
+        return [{"role": msg.role, "content": msg.content} for msg in messages]
 
     @staticmethod
     def add_message(
         db: Session,
         conversation_id: int,
         role: str,
-        content: str
+        content: str,
     ) -> None:
-        
         message = Message(
             conversation_id=conversation_id,
             role=role,
-            content=content
+            content=content,
         )
         db.add(message)
         db.commit()
-        
-    
+
     @staticmethod
     def get_or_create_conversation(
         db: Session,
         conversation_id: Optional[int],
-        user_id: Optional[int] = None
-    ) -> str:
-        
+        user_id: Optional[int] = None,
+    ) -> int:
         if conversation_id:
             conversation = db.query(Conversation).filter(
                 Conversation.id == conversation_id
@@ -97,9 +97,8 @@ class ConversationService:
     def update_conversation_title(
         db: Session,
         conversation_id: int,
-        title: str
+        title: str,
     ) -> None:
-        
         conversation = db.query(Conversation).filter(
             Conversation.id == conversation_id
         ).first()

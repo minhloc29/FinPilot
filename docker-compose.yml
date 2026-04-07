@@ -19,7 +19,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-      : financial_copilot_redis
+    container_name: financial_copilot_redis
     command: redis-server /usr/local/etc/redis/redis.conf
     ports:
       - "6379:6379"
@@ -32,14 +32,17 @@ services:
   # Backend API
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: financial_copilot_backend
     environment:
       DATABASE_URL: postgresql://user:password@postgres:5432/financial_copilot
       REDIS_URL: redis://redis:6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      XAI_API_KEY: ${XAI_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
     ports:
       - "8000:8000"
@@ -58,7 +61,7 @@ services:
       dockerfile: Dockerfile
     container_name: financial_copilot_frontend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      VITE_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
     depends_on:

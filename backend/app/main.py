@@ -1,6 +1,18 @@
 """
 Main FastAPI application entry point for AI Financial Copilot
 """
+import os
+import sys
+
+# Support direct execution: python backend/app/main.py
+if __package__ in (None, ""):
+    backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    repo_root = os.path.abspath(os.path.join(backend_root, ".."))
+    if backend_root not in sys.path:
+        sys.path.insert(0, backend_root)
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
